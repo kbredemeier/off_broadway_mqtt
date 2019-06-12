@@ -29,11 +29,10 @@ defmodule OffBroadwayTortoise.MixProject do
     [
       {:gen_stage, "~> 0.14"},
       {:tortoise, "~> 0.9"},
-      {:broadway, "~> 0.3.0", only: [:dev, :test]},
+      {:broadway, "~> 0.3.0"},
       {:credo, "~> 1.0", only: [:dev, :test]},
       {:ex_doc, "~> 0.19.2", only: :dev, runtime: false},
-      {:excoveralls, "~> 0.10", only: :test},
-      {:mox, "~> 0.5", only: :test}
+      {:excoveralls, "~> 0.10", only: :test}
     ]
   end
 end

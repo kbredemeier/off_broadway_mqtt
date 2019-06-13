@@ -1,4 +1,4 @@
-defmodule OffBroadwayTortoise.Client do
+defmodule OffBroadway.MQTTProducer.Client do
   @moduledoc """
   Implemens the default MQTT client that is used by the producer to connect
   to the broker.
@@ -6,15 +6,15 @@ defmodule OffBroadwayTortoise.Client do
   Broker.
 
   The client
-  * establishes the connection to OffBroadwayTortoise broker.
-  * wrapping the received payload in a `t:OffBroadwayTortoise.Data.t/0` struct.
+  * establishes the connection to OffBroadway.MQTTProducer broker.
+  * wrapping the received payload in a `t:OffBroadway.MQTTProducer.Data.t/0` struct.
   * enques received and wrapped messages to the passed queue
   """
 
   require Logger
 
-  alias OffBroadwayTortoise
-  alias OffBroadwayTortoise.Handler
+  alias OffBroadway.MQTTProducer
+  alias OffBroadway.MQTTProducer.Handler
 
   @type option ::
           {:handler, {module, keyword}}
@@ -25,8 +25,8 @@ defmodule OffBroadwayTortoise.Client do
 
   @callback start(
               queue_name :: GenServer.name(),
-              OffBroadwayTortoise.subscriptions(),
-              OffBroadwayTortoise.conn() | nil,
+              OffBroadway.MQTTProducer.subscriptions(),
+              OffBroadway.MQTTProducer.conn() | nil,
               options
             ) :: :ok
 
@@ -37,9 +37,9 @@ defmodule OffBroadwayTortoise.Client do
   def start(queue, subscriptions, conn \\ nil, opts \\ [])
 
   def start(queue, {topic, qos}, conn, opts) do
-    mqtt_config = OffBroadwayTortoise.config()
+    mqtt_config = OffBroadway.MQTTProducer.config()
 
-    client_id = OffBroadwayTortoise.unique_client_id(mqtt_config)
+    client_id = OffBroadway.MQTTProducer.unique_client_id(mqtt_config)
 
     {_, conn_opts} = server = conn || get_mqtt_conn(mqtt_config)
 

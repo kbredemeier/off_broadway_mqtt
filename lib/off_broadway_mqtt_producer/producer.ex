@@ -1,8 +1,8 @@
-defmodule OffBroadwayTortoise.Producer do
+defmodule OffBroadway.MQTTProducer.Producer do
   @moduledoc """
   Acts as Producer for messages from mqtt messages.
   A produce connects to the given topic with with given QOS level and produces
-  `t:OffBroadwayTortoise.Data.t/0` events from the incoming messages.
+  `t:OffBroadway.MQTTProducer.Data.t/0` events from the incoming messages.
 
   Internally this producer
   * implements the `GenStage` behaviour as a producer
@@ -18,16 +18,16 @@ defmodule OffBroadwayTortoise.Producer do
 
   require Logger
 
-  alias OffBroadwayTortoise
+  alias OffBroadway.MQTTProducer
 
   @behaviour Broadway.Producer
 
   @default_dequeue_interval 5000
 
-  @default_queue OffBroadwayTortoise.Queue
-  @default_queue_registry OffBroadwayTortoise.QueueRegistry
-  @default_queue_supervisor OffBroadwayTortoise.QueueSupervisor
-  @default_mqtt_client OffBroadwayTortoise.Client
+  @default_queue OffBroadway.MQTTProducer.Queue
+  @default_queue_registry OffBroadway.MQTTProducer.QueueRegistry
+  @default_queue_supervisor OffBroadway.MQTTProducer.QueueSupervisor
+  @default_mqtt_client OffBroadway.MQTTProducer.Client
 
   @type state :: %{
           demand: non_neg_integer,
@@ -44,8 +44,8 @@ defmodule OffBroadwayTortoise.Producer do
                | {:registry, GenServer.name()}
                | {:supervisor, GenServer.name()}
                | {:client, module}
-               | {:topic, OffBroadwayTortoise.topic()}
-               | {:qos, OffBroadwayTortoise.qos()}
+               | {:topic, OffBroadway.MQTTProducer.topic()}
+               | {:qos, OffBroadway.MQTTProducer.qos()}
                | {:connection, {atom, [term]}},
              options: [option, ...]
   def init(opts) do
@@ -60,7 +60,7 @@ defmodule OffBroadwayTortoise.Producer do
     conn = opts[:connection]
     client_opts = Keyword.take(opts, [:handler, :sub_ack])
 
-    queue_name = OffBroadwayTortoise.queue_name(registry, topic)
+    queue_name = OffBroadway.MQTTProducer.queue_name(registry, topic)
 
     with :ok <- queue.start(supervisor, queue_name),
          :ok <- client.start(queue_name, {topic, qos}, conn, client_opts) do

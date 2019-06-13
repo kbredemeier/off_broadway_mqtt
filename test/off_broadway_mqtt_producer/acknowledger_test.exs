@@ -1,12 +1,12 @@
-defmodule OffBroadwayTortoise.AcknowledgerTest do
-  use OffBroadwayTortoise.Case, async: true
+defmodule OffBroadway.MQTTProducer.AcknowledgerTest do
+  use OffBroadway.MQTTProducerCase, async: true
 
   import ExUnit.CaptureLog
-  import OffBroadwayTortoise
+  import OffBroadway.MQTTProducer
 
-  alias OffBroadwayTortoise.Acknowledger, as: Ack
-  alias OffBroadwayTortoise.Error
-  alias OffBroadwayTortoise.Queue
+  alias OffBroadway.MQTTProducer.Acknowledger, as: Ack
+  alias OffBroadway.MQTTProducer.Error
+  alias OffBroadway.MQTTProducer.Queue
 
   describe "requeuing messages" do
     @tag capture_log: true

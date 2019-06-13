@@ -1,4 +1,4 @@
-defmodule OffBroadwayTortoise.Queue do
+defmodule OffBroadway.MQTTProducer.Queue do
   @moduledoc """
   This `Genserver` is used as a message queue to buffer incoming messages.
   The incoming messages are dequeued by broadway whenever demanded by a

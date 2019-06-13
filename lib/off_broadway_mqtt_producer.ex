@@ -1,4 +1,4 @@
-defmodule OffBroadwayTortoise do
+defmodule OffBroadway.MQTTProducer do
   @moduledoc """
   A broadway producer for MQTT topic subscriptions.
   """
@@ -24,7 +24,7 @@ defmodule OffBroadwayTortoise do
   @default_transport :tcp
   @default_host 'localhost'
   @default_port 1883
-  @default_client_id_prefix "off_broadway_tortoise"
+  @default_client_id_prefix "off_broadway_mqtt_producer"
 
   alias Broadway.Message
 
@@ -32,11 +32,11 @@ defmodule OffBroadwayTortoise do
     quote do
       use Broadway
 
-      import OffBroadwayTortoise
-      require OffBroadwayTortoise
+      import OffBroadway.MQTTProducer
+      require OffBroadway.MQTTProducer
 
       alias Broadway.Message
-      alias OffBroadwayTortoise.Producer
+      alias OffBroadway.MQTTProducer.Producer
     end
   end
 
@@ -88,7 +88,7 @@ defmodule OffBroadwayTortoise do
   """
   @spec queue_name(atom, topic) :: {:via, Registry, {atom, topic}}
   def queue_name(
-        registry \\ OffBroadwayTortoise.QueueRegistry,
+        registry \\ OffBroadway.MQTTProducer.QueueRegistry,
         topic
       )
       when is_binary(topic) and is_atom(registry) do
@@ -96,11 +96,11 @@ defmodule OffBroadwayTortoise do
   end
 
   @doc """
-  Returns the runtime configuration for OffBroadwayTortoise.
+  Returns the runtime configuration for OffBroadway.MQTTProducer.
   """
   @spec config(nil | keyword) :: config
   def config(opts \\ nil) do
-    config = opts || Application.get_all_env(:off_broadway_tortoise)
+    config = opts || Application.get_all_env(:off_broadway_mqtt_producer)
     client_id_prefix = config[:client_id_prefix] || @default_client_id_prefix
 
     {transport, conn_opts} =

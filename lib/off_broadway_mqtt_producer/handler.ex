@@ -1,4 +1,4 @@
-defmodule OffBroadwayTortoise.Handler do
+defmodule OffBroadway.MQTTProducer.Handler do
   @moduledoc """
   `Tortoise.Handler` implementation.
   Incoming messages are wrapped in `t:Broadway.Messate.t/0` structs and pushed
@@ -10,9 +10,9 @@ defmodule OffBroadwayTortoise.Handler do
   require Logger
 
   alias Broadway.Message
-  alias OffBroadwayTortoise.Acknowledger
-  alias OffBroadwayTortoise.Data
-  alias OffBroadwayTortoise.Queue
+  alias OffBroadway.MQTTProducer.Acknowledger
+  alias OffBroadway.MQTTProducer.Data
+  alias OffBroadway.MQTTProducer.Queue
 
   defstruct queue: nil, acknowledger: nil, meta: nil, sub_ack: nil
 

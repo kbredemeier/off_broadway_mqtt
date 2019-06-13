@@ -1,9 +1,9 @@
-defmodule OffBroadwayTortoise.Factory do
+defmodule OffBroadway.MQTTProducer.Factory do
   @moduledoc false
 
   alias Broadway.Message
-  alias OffBroadwayTortoise.Acknowledger
-  alias OffBroadwayTortoise.Data
+  alias OffBroadway.MQTTProducer.Acknowledger
+  alias OffBroadway.MQTTProducer.Data
 
   @doc """
   Builds a data structure equivalent to what the mqtt producer is producing.

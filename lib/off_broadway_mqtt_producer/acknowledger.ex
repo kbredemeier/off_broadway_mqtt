@@ -1,4 +1,4 @@
-defmodule OffBroadwayTortoise.Acknowledger do
+defmodule OffBroadway.MQTTProducer.Acknowledger do
   @moduledoc """
   Implements `Broadway.Acknowledger` behaviour.
 
@@ -11,7 +11,7 @@ defmodule OffBroadwayTortoise.Acknowledger do
 
   require Logger
 
-  alias OffBroadwayTortoise.Queue
+  alias OffBroadway.MQTTProducer.Queue
 
   @behaviour Broadway.Acknowledger
 

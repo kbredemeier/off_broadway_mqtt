@@ -1,7 +1,7 @@
-defmodule OffBroadwayTortoise.TestBroadway do
+defmodule OffBroadway.MQTTProducer.TestBroadway do
   @moduledoc false
 
-  use OffBroadwayTortoise
+  use OffBroadway.MQTTProducer
 
   def start_link(opts) do
     test_pid = self()

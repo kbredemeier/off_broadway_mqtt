@@ -1,5 +1,5 @@
-defmodule OffBroadwayTortoise.QueueTest do
-  use OffBroadwayTortoise.Case, async: true
+defmodule OffBroadway.MQTTProducer.QueueTest do
+  use OffBroadway.MQTTProducerCase, async: true
 
   test "start_link/1 starts a queue under the given name", %{test: test} do
     assert {:ok, pid} = Queue.start_link(test)

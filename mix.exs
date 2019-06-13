@@ -1,9 +1,9 @@
-defmodule OffBroadwayTortoise.MixProject do
+defmodule OffBroadway.MQTTProducer.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :off_broadway_tortoise,
+      app: :off_broadway_mqtt_producer,
       deps: deps(),
       docs: [extras: ["README.md"]],
       elixir: "~> 1.8",
@@ -30,7 +30,7 @@ defmodule OffBroadwayTortoise.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {OffBroadwayTortoise.Application, []}
+      mod: {OffBroadway.MQTTProducer.Application, []}
     ]
   end
 
@@ -40,7 +40,7 @@ defmodule OffBroadwayTortoise.MixProject do
       licenses: ["Apache 2.0"],
       files: ["lib", "mix.exs", "README*", "CHANGELOG*", "LICENSE*"],
       links: %{
-        "GitHub" => "https://github.com/kbredemeier/off_broadway_tortoise"
+        "GitHub" => "https://github.com/kbredemeier/off_broadway_mqtt_producer"
       }
     ]
   end

@@ -1,4 +1,4 @@
-defmodule OffBroadwayTortoise.TestHandler do
+defmodule OffBroadway.MQTTProducer.TestHandler do
   @moduledoc false
 
   use Tortoise.Handler

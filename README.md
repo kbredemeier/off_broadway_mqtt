@@ -1,16 +1,16 @@
-# OffBroadwayTortoise
+# OffBroadway.MQTTProducer
 
 A MQTT connector for [broadway](https://github.com/plataformatec/broadway).
 
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `off_broadway_tortoise` to your list of dependencies in `mix.exs`:
+by adding `off_broadway_mqtt_producer` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:off_broadway_tortoise, "~> 0.1.0"}
+    {:off_broadway_mqtt_producer, "~> 0.1.0"}
   ]
 end
 ```
@@ -18,8 +18,8 @@ end
 ## Usage
 
 ```elixir
-defmodule OffBroadwayTortoise.TestBroadway do
-  use OffBroadwayTortoise
+defmodule OffBroadway.MQTTProducer.TestBroadway do
+  use OffBroadway.MQTTProducer
 
   def start_link(topic) do
     Broadway.start_link(__MODULE__,
@@ -45,7 +45,7 @@ defmodule OffBroadwayTortoise.TestBroadway do
       updated_data = String.upcase(message.data)
 
       if updated_data == "NINCOMPOOP" do
-        raise OffBroadwayTortoise.Error,
+        raise OffBroadway.MQTTProducer.Error,
           message: "that was foolish", ack: :retry
       end
 

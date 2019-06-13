@@ -1,4 +1,4 @@
-defmodule OffBroadwayTortoise.Case do
+defmodule OffBroadway.MQTTProducerCase do
   @moduledoc """
   Test templace for testing aspects of this library.
 
@@ -7,14 +7,14 @@ defmodule OffBroadwayTortoise.Case do
 
   use ExUnit.CaseTemplate
 
-  alias OffBroadwayTortoise.Queue
+  alias OffBroadway.MQTTProducer.Queue
 
   using _opts do
     quote do
-      import OffBroadwayTortoise.Case
-      import OffBroadwayTortoise.Factory
-      alias OffBroadwayTortoise.Data
-      alias OffBroadwayTortoise.Queue
+      import OffBroadway.MQTTProducerCase
+      import OffBroadway.MQTTProducer.Factory
+      alias OffBroadway.MQTTProducer.Data
+      alias OffBroadway.MQTTProducer.Queue
     end
   end
 
@@ -84,14 +84,14 @@ defmodule OffBroadwayTortoise.Case do
   to the context.
   """
   def start_mqtt_client(context) do
-    client_id = OffBroadwayTortoise.unique_client_id()
+    client_id = OffBroadway.MQTTProducer.unique_client_id()
     subscriptions = Map.get(context, :subscriptions) || []
 
-    %{conn: {_, mqtt_opts}} = OffBroadwayTortoise.config()
+    %{conn: {_, mqtt_opts}} = OffBroadway.MQTTProducer.config()
 
     tortoise_opts = [
       client_id: client_id,
-      handler: {OffBroadwayTortoise.TestHandler, [pid: self()]},
+      handler: {OffBroadway.MQTTProducer.TestHandler, [pid: self()]},
       server: {Tortoise.Transport.Tcp, mqtt_opts},
       subscriptions: subscriptions
     ]
@@ -114,15 +114,15 @@ defmodule OffBroadwayTortoise.Case do
   context.
   """
   def start_queue(%{test: test_name} = context) do
-    registry = Map.get(context, :registry, OffBroadwayTortoise.QueueRegistry)
+    registry = Map.get(context, :registry, OffBroadway.MQTTProducer.QueueRegistry)
 
     queue_name =
       context
       |> Map.get(:start_queue, test_name)
       |> case do
         {:via, _, _} = reg_name -> reg_name
-        true -> OffBroadwayTortoise.queue_name(registry, to_string(test_name))
-        name -> OffBroadwayTortoise.queue_name(registry, name)
+        true -> OffBroadway.MQTTProducer.queue_name(registry, to_string(test_name))
+        name -> OffBroadway.MQTTProducer.queue_name(registry, name)
       end
 
     {:via, _, {_, topic}} = queue_name
@@ -136,7 +136,7 @@ defmodule OffBroadwayTortoise.Case do
   end
 
   @doc """
-  Returns options to start `OffBroadwayTortoise.TestBroadway` with.
+  Returns options to start `OffBroadway.MQTTProducer.TestBroadway` with.
   """
   def test_broadway_opts_from_context(context, overrides \\ []) do
     producer_opts =

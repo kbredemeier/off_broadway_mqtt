@@ -1,7 +1,7 @@
-defmodule OffBroadwayTortoise.ClientTest do
-  use OffBroadwayTortoise.Case, async: true
+defmodule OffBroadway.MQTTProducer.ClientTest do
+  use OffBroadway.MQTTProducerCase, async: true
 
-  alias OffBroadwayTortoise.Client
+  alias OffBroadway.MQTTProducer.Client
 
   @moduletag capture_log: true
 

@@ -1,6 +1,6 @@
 # OffBroadwayTortoise
 
-**TODO: Add description**
+A MQTT connector for [broadway](https://github.com/plataformatec/broadway).
 
 ## Installation
 
@@ -15,7 +15,58 @@ def deps do
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at [https://hexdocs.pm/off_broadway_tortoise](https://hexdocs.pm/off_broadway_tortoise).
+## Usage
 
+```elixir
+defmodule OffBroadwayTortoise.TestBroadway do
+  use OffBroadwayTortoise
+
+  def start_link(topic) do
+    Broadway.start_link(__MODULE__,
+      name: name,
+      producers: [
+        default: [
+          module: {Producer, [
+            topic: {topic, 0}
+          ]},
+          stages: 1
+        ]
+      ],
+      processors: [default: [stages: 1]],
+      batchers: [
+        default: [stages: 1, batch_size: 10]
+      ]
+    )
+  end
+
+  @impl true
+  def handle_message(_processor_name, message, _context) do
+    handle_errors(message) do
+      updated_data = String.upcase(message.data)
+
+      if updated_data == "NINCOMPOOP" do
+        raise OffBroadwayTortoise.Error,
+          message: "that was foolish", ack: :retry
+      end
+
+      %{message | data: updated_data}
+    end
+  end
+end
+```
+
+## License
+
+Copyright 2019 Kristopher Bredemeier
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.

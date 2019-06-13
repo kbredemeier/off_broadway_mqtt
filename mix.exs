@@ -4,19 +4,22 @@ defmodule OffBroadwayTortoise.MixProject do
   def project do
     [
       app: :off_broadway_tortoise,
-      version: "0.1.0",
-      elixir: "~> 1.8",
-      elixirc_paths: elixirc_paths(Mix.env()),
-      start_permanent: Mix.env() == :prod,
       deps: deps(),
       docs: [extras: ["README.md"]],
+      elixir: "~> 1.8",
+      elixirc_paths: elixirc_paths(Mix.env()),
+      package: package(),
+      start_permanent: Mix.env() == :prod,
+      version: "0.1.0",
+
+      # Coveralls
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [
         coveralls: :test,
         "coveralls.detail": :test,
         "coveralls.post": :test,
         "coveralls.html": :test
-      ],
+      ]
     ]
   end
 
@@ -28,6 +31,17 @@ defmodule OffBroadwayTortoise.MixProject do
     [
       extra_applications: [:logger],
       mod: {OffBroadwayTortoise.Application, []}
+    ]
+  end
+
+  defp package do
+    [
+      maintainers: ["Kristopher Bredemeier"],
+      licenses: ["Apache 2.0"],
+      files: ["lib", "mix.exs", "README*", "CHANGELOG*", "LICENSE*"],
+      links: %{
+        "GitHub" => "https://github.com/kbredemeier/off_broadway_tortoise"
+      }
     ]
   end
 

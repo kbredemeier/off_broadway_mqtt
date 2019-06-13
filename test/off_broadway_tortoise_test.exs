@@ -1,5 +1,7 @@
 defmodule OffBroadwayTortoiseTest do
-  use ExUnit.Case, async: true
+  use OffBroadwayTortoise.Case, async: true
+
+  @moduletag capture_log: true
 
   describe "unique_client_id_/1" do
     test "returns a string" do

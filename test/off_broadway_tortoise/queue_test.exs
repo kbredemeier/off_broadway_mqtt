@@ -1,7 +1,5 @@
 defmodule OffBroadwayTortoise.QueueTest do
-  use OffBroadwayTortoise.QueueCase, async: true
-
-  alias OffBroadwayTortoise.Queue
+  use OffBroadwayTortoise.Case, async: true
 
   test "start_link/1 starts a queue under the given name", %{test: test} do
     assert {:ok, pid} = Queue.start_link(test)

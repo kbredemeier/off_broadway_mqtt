@@ -1,5 +1,5 @@
 defmodule OffBroadwayTortoise.BroadwayTest do
-  use OffBroadwayTortoise.BroadwayCase, async: true
+  use OffBroadwayTortoise.Case, async: true
 
   alias OffBroadwayTortoise.TestBroadway
 

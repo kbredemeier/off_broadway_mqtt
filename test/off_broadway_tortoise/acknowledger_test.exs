@@ -1,6 +1,5 @@
 defmodule OffBroadwayTortoise.AcknowledgerTest do
-  use OffBroadwayTortoise.BroadwayCase, async: true
-  use OffBroadwayTortoise.QueueCase, async: true
+  use OffBroadwayTortoise.Case, async: true
 
   import ExUnit.CaptureLog
   import OffBroadwayTortoise

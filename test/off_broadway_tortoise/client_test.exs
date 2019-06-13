@@ -1,8 +1,9 @@
 defmodule OffBroadwayTortoise.ClientTest do
-  use OffBroadwayTortoise.BroadwayCase
-  use OffBroadwayTortoise.QueueCase
+  use OffBroadwayTortoise.Case, async: true
 
   alias OffBroadwayTortoise.Client
+
+  @moduletag capture_log: true
 
   @tag start_registry: true
   @tag start_queue: true
@@ -21,8 +22,7 @@ defmodule OffBroadwayTortoise.ClientTest do
   @tag start_registry: true
   @tag start_queue: true
   test "starts a client for each subscription", %{
-    queue: queue,
-    queue_topic: topic
+    queue: queue
   } do
     assert :ok =
              Client.start(queue, [{"test/foo", 0}, {"test/bar", 0}], nil,

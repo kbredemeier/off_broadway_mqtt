@@ -27,20 +27,28 @@ defmodule OffBroadwayTortoise.QueueCase do
   end
 
   @doc """
-  Starts a `#{Queue}` and puts it's registered name under `queue` to the
+  Starts a `#{inspect(Queue)}` and puts it's registered name under `queue` to the
   context.
   """
   def start_queue(%{test: test_name} = context) do
-    name =
-      case Map.get(context, :start_queue) do
-        true -> :"#{test_name} queue"
-        name -> name
+    registry = Map.get(context, :registry, OffBroadwayTortoise.QueueRegistry)
+
+    queue_name =
+      context
+      |> Map.get(:start_queue, test_name)
+      |> case do
+        {:via, _, _} = reg_name -> reg_name
+        true -> OffBroadwayTortoise.queue_name(registry, to_string(test_name))
+        name -> OffBroadwayTortoise.queue_name(registry, name)
       end
 
-    {:ok, pid} = start_supervised({Queue, name})
+    {:via, _, {_, topic}} = queue_name
+
+    {:ok, pid} = start_supervised({Queue, queue_name})
 
     context
-    |> Map.put(:queue, name)
+    |> Map.put(:queue, queue_name)
+    |> Map.put(:queue_topic, topic)
     |> Map.put(:pid, pid)
   end
 end

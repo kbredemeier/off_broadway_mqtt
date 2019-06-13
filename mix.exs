@@ -9,7 +9,14 @@ defmodule OffBroadwayTortoise.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      docs: [extras: ["README.md"]]
+      docs: [extras: ["README.md"]],
+      test_coverage: [tool: ExCoveralls],
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ],
     ]
   end
 

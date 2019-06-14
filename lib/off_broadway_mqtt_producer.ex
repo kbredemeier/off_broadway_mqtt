@@ -3,30 +3,14 @@ defmodule OffBroadway.MQTTProducer do
   A broadway producer for MQTT topic subscriptions.
   """
 
+  alias Broadway.Message
+  alias OffBroadway.MQTTProducer.Config
+
   @type topic :: binary
   @type qos :: 0 | 1 | 2
-  @type subscriptions :: [{topic, qos}]
-
-  @type conn_opt ::
-          {:host, charlist}
-          | {:port, non_neg_integer}
-          | {atom, any}
-
-  @type conn_opts :: [conn_opt, ...]
-
-  @type conn :: {:tcp | :ssl, conn_opts}
-
-  @type config :: %{
-          client_id_prefix: String.t(),
-          conn: conn
-        }
-
-  @default_transport :tcp
-  @default_host 'localhost'
-  @default_port 1883
-  @default_client_id_prefix "off_broadway_mqtt_producer"
-
-  alias Broadway.Message
+  @type subscription :: {topic, qos}
+  @type queue_name :: {:via, Registry, {atom, topic}}
+  @type config :: Config.t()
 
   defmacro __using__(_) do
     quote do
@@ -76,15 +60,20 @@ defmodule OffBroadway.MQTTProducer do
   other from the broker in case the broker does not allow multiple connections
   with the same clent id.
   """
-  @spec unique_client_id(nil | config) :: String.t()
-  def unique_client_id(config \\ nil) do
-    config = config || config()
+  @spec unique_client_id(:default | config) :: String.t()
+  def unique_client_id(config \\ :default)
+
+  def unique_client_id(%{client_id_prefix: prefix}) do
     random = [:positive] |> System.unique_integer() |> to_string
-    config.client_id_prefix <> "_" <> random
+    prefix <> "_" <> random
+  end
+
+  def unique_client_id(:default) do
+    :default |> Config.new() |> unique_client_id
   end
 
   @doc """
-  Returns the name for queue belonging to the given topic.
+  Returns the name for the queue belonging to the given topic.
   """
   @spec queue_name(atom, topic) :: {:via, Registry, {atom, topic}}
   def queue_name(
@@ -97,41 +86,13 @@ defmodule OffBroadway.MQTTProducer do
 
   @doc """
   Returns the runtime configuration for OffBroadway.MQTTProducer.
+
+  See `f:OffBroadway.MQTTProducer.Config.new/1` for more details.
   """
-  @spec config(nil | keyword) :: config
-  def config(opts \\ nil) do
-    config = opts || Application.get_all_env(:off_broadway_mqtt_producer)
-    client_id_prefix = config[:client_id_prefix] || @default_client_id_prefix
+  @spec config(:default | Config.options()) :: Config.t()
+  def config(config_opts \\ :default)
+  def config(:default), do: Config.new(:default)
 
-    {transport, conn_opts} =
-      config
-      |> Keyword.get(:connection, [])
-      |> case do
-        conn_opts when is_list(conn_opts) -> conn_opts
-        _ -> []
-      end
-      |> Keyword.update(:host, @default_host, &parse_host/1)
-      |> Keyword.update(:port, @default_port, &parse_port/1)
-      |> Keyword.pop(:transport, @default_transport)
-
-    %{
-      client_id_prefix: client_id_prefix,
-      conn: {transport, conn_opts}
-    }
-  end
-
-  defp parse_host(host) when is_binary(host), do: String.to_charlist(host)
-  defp parse_host(host), do: host
-
-  defp parse_port(port) when is_integer(port), do: port
-
-  defp parse_port(port) when is_binary(port) do
-    case Integer.parse(port) do
-      {port, ""} -> port
-      _ -> raise "invalid port configured for #{__MODULE__}: #{port}"
-    end
-  end
-
-  defp parse_port(port),
-    do: raise("invalid port configured for #{__MODULE__}: #{port}")
+  def config(config_opts) when is_list(config_opts),
+    do: Config.new(:default, config_opts)
 end

@@ -1,6 +1,8 @@
 defmodule OffBroadway.MQTTProducerTest do
   use OffBroadway.MQTTProducerCase, async: true
 
+  alias OffBroadway.MQTTProducer.Config
+
   @moduletag capture_log: true
 
   describe "unique_client_id_/1" do
@@ -21,7 +23,9 @@ defmodule OffBroadway.MQTTProducerTest do
 
     test "takes the client_id_prefix from config" do
       assert id =
-               OffBroadway.MQTTProducer.unique_client_id(%{client_id_prefix: "asd"})
+               OffBroadway.MQTTProducer.unique_client_id(%{
+                 client_id_prefix: "asd"
+               })
 
       assert Regex.match?(~r/^asd_.+/, id)
     end
@@ -41,25 +45,16 @@ defmodule OffBroadway.MQTTProducerTest do
 
   describe "config/1" do
     test "returns the mqtt config" do
-      assert %{
+      assert %Config{
                client_id_prefix: "off_broadway_mqtt_producer",
-               conn: {:tcp, [host: 'vernemq', port: 1883]}
-             } == OffBroadway.MQTTProducer.config()
+               server: {:tcp, [host: 'vernemq', port: 1883]}
+             } = OffBroadway.MQTTProducer.config()
     end
 
     test "sets transport" do
-      assert %{
-               conn: {:ssl, _}
-             } = OffBroadway.MQTTProducer.config(connection: [transport: :ssl])
-    end
-
-    test "parses port and host" do
-      assert %{
-               conn: {:tcp, [host: 'test', port: 1111]}
-             } =
-               OffBroadway.MQTTProducer.config(
-                 connection: [host: "test", port: "1111"]
-               )
+      assert %Config{
+               server: {:ssl, _}
+             } = OffBroadway.MQTTProducer.config(server_opts: [transport: :ssl])
     end
   end
 end

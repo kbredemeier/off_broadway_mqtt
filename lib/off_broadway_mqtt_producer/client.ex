@@ -3,94 +3,100 @@ defmodule OffBroadway.MQTTProducer.Client do
   Implemens the default MQTT client that is used by the producer to connect
   to the broker.
 
-  Broker.
-
   The client
-  * establishes the connection to OffBroadway.MQTTProducer broker.
-  * wrapping the received payload in a `t:OffBroadway.MQTTProducer.Data.t/0` struct.
-  * enques received and wrapped messages to the passed queue
+
+    * establishes the connection to OffBroadway.MQTTProducer broker
+    * subscribes to the provided topic
+    * wrapping the received payload in a `t:OffBroadway.MQTTProducer.Data.t/0`
+      struct.
+    * enques received and wrapped messages to the passed queue
+
+  This module relies on `Tortoise` and `f:Tortoise.Supervisor.start_child/1`
+  establish the connection and subscribe to the topic.
   """
 
   require Logger
 
   alias OffBroadway.MQTTProducer
-  alias OffBroadway.MQTTProducer.Handler
+  alias OffBroadway.MQTTProducer.Config
 
   @type option ::
-          {:handler, {module, keyword}}
-          | {:sub_ack, nil | GenServer.name()}
+          {:handler_opts, keyword}
+          | {:sub_ack, nil | Process.dest()}
           | {atom, any}
 
   @type options :: [option]
 
-  @callback start(
-              queue_name :: GenServer.name(),
-              OffBroadway.MQTTProducer.subscriptions(),
-              OffBroadway.MQTTProducer.conn() | nil,
-              options
-            ) :: :ok
-
   @doc """
-  Starts a MQTT client for the passed subscription. If given multiple
-  subscriptions it stars one client for each subscription.
+  Starts a MQTT client for the passed subscription with a random client id.
+
+  When passing `:default` as the first argument
+  `f:OffBroadway.MQTTProducer.config/1` is used to figure out the connection.
+
+  ## Options
+
+    * `:sub_ack` - Can be used to inject a subscriber for subscription events.
+      The subscriber receives a message in the form
+      `{:subscription, client_id, topic, status}`.
   """
-  def start(queue, subscriptions, conn \\ nil, opts \\ [])
+  @spec start(
+          Config.t() | Conifig.options() | :default,
+          MQTTProducer.subscription(),
+          MQTTProducer.queue_name(),
+          options
+        ) :: DynamicSupervisor.on_start_child()
+  def start(config \\ :default, subscription, queue_name, opts \\ [])
 
-  def start(queue, {topic, qos}, conn, opts) do
-    mqtt_config = OffBroadway.MQTTProducer.config()
+  def start(arg, subscription, queue_name, opts)
+      when arg == :default
+      when is_list(arg) do
+    arg
+    |> Config.new()
+    |> start(subscription, queue_name, opts)
+  end
 
-    client_id = OffBroadway.MQTTProducer.unique_client_id(mqtt_config)
+  def start(%Config{} = config, {topic, qos}, queue_name, opts) do
+    client_id = MQTTProducer.unique_client_id(config)
+    {_, server_opts} = server = get_mqtt_server(config)
 
-    {_, conn_opts} = server = conn || get_mqtt_conn(mqtt_config)
-
-    {handler_mod, handler_opts} = opts[:handler] || {Handler, []}
+    meta =
+      server_opts
+      |> Enum.into(%{})
+      |> Map.put(:client_id, client_id)
+      |> Map.put(:topic, topic)
+      |> Map.put(:qos, qos)
+      |> Map.drop([:password])
 
     handler_opts =
-      handler_opts
-      |> Keyword.put_new(:queue, queue)
-      |> Keyword.put_new(:sub_ack, opts[:sub_ack])
-      |> Keyword.put_new_lazy(:meta, fn ->
-        conn_opts
-        |> Enum.into(%{})
-        |> Map.put(:client_id, client_id)
-        |> Map.put(:topic, topic)
-        |> Map.put(:qos, qos)
+      Keyword.get_lazy(opts, :handler_opts, fn ->
+        [
+          client_id: client_id,
+          queue: queue_name,
+          sub_ack: opts[:sub_ack],
+          meta: meta,
+          config: config
+        ]
       end)
 
     opts = [
       client_id: client_id,
-      handler: {handler_mod, handler_opts},
+      handler: {config.handler, handler_opts},
       subscriptions: [{topic, qos}],
       server: server
     ]
 
-    case Tortoise.Supervisor.start_child(opts) do
-      {:error, {:already_started, _pid}} ->
-        Logger.warn("client already started", handler_opts[:meta])
-        :ok
-
-      {:ok, _} ->
-        :ok
-
-      {:error, reason} ->
-        raise ArgumentError,
-              "invalid args given to #{__MODULE__}.start/4, #{inspect(reason)}"
-    end
+    Tortoise.Supervisor.start_child(opts)
   end
 
-  def start(queue, subscriptions, conn, opts) when is_list(subscriptions) do
-    Enum.each(subscriptions, &start(queue, &1, conn, opts))
-  end
-
-  defp get_mqtt_conn(%{conn: {:ssl, opts}}) do
+  defp get_mqtt_server(%{server: {:ssl, opts}}) do
     {Tortoise.Transport.SSL, opts}
   end
 
-  defp get_mqtt_conn(%{conn: {:tcp, opts}}) do
+  defp get_mqtt_server(%{server: {:tcp, opts}}) do
     {Tortoise.Transport.Tcp, opts}
   end
 
-  defp get_mqtt_conn(%{conn: {transport, _}}) do
+  defp get_mqtt_server(%{server: {transport, _}}) do
     raise "invalid transport given for #{__MODULE__}: #{inspect(transport)}" <>
             " Allowed values are `:ssl` and `:tcp`"
   end

@@ -1,8 +1,8 @@
 defmodule OffBroadway.MQTTProducer.Producer do
   @moduledoc """
-  Acts as Producer for messages from mqtt messages.
+  Acts as Producer for messages from mqtt a mqtt topic subscription.
   A produce connects to the given topic with with given QOS level and produces
-  `t:OffBroadway.MQTTProducer.Data.t/0` events from the incoming messages.
+  `t:Broadway.Message.t/0` events from the incoming messages.
 
   Internally this producer
   * implements the `GenStage` behaviour as a producer
@@ -44,9 +44,10 @@ defmodule OffBroadway.MQTTProducer.Producer do
                | {:registry, GenServer.name()}
                | {:supervisor, GenServer.name()}
                | {:client, module}
-               | {:topic, OffBroadway.MQTTProducer.topic()}
-               | {:qos, OffBroadway.MQTTProducer.qos()}
-               | {:connection, {atom, [term]}},
+               | {:topic, MQTTProducer.topic()}
+               | {:qos, MQTTProducer.qos()}
+               | {:connection, {atom, [term]}}
+               | {:sub_ack, Process.dest()},
              options: [option, ...]
   def init(opts) do
     dequeue_interval = opts[:dequeue_interval] || @default_dequeue_interval
@@ -57,13 +58,13 @@ defmodule OffBroadway.MQTTProducer.Producer do
     client = opts[:client] || @default_mqtt_client
     topic = opts[:topic]
     qos = opts[:qos] || 0
-    conn = opts[:connection]
-    client_opts = Keyword.take(opts, [:handler, :sub_ack])
+    conn = opts[:connection] || :default
+    client_opts = Keyword.take(opts, [:sub_ack])
 
-    queue_name = OffBroadway.MQTTProducer.queue_name(registry, topic)
+    queue_name = MQTTProducer.queue_name(registry, topic)
 
     with :ok <- queue.start(supervisor, queue_name),
-         :ok <- client.start(queue_name, {topic, qos}, conn, client_opts) do
+         {:ok, _} <- client.start(conn, {topic, qos}, queue_name, client_opts) do
       {:producer,
        %{
          demand: 0,

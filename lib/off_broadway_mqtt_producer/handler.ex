@@ -1,6 +1,8 @@
 defmodule OffBroadway.MQTTProducer.Handler do
   @moduledoc """
-  `Tortoise.Handler` implementation.
+  Default `Tortoise.Handler` implementation used by
+  `OffBroadway.MQTTProducer.Client`.
+
   Incoming messages are wrapped in `t:Broadway.Messate.t/0` structs and pushed
   into the provided queue.
   """
@@ -10,23 +12,27 @@ defmodule OffBroadway.MQTTProducer.Handler do
   require Logger
 
   alias Broadway.Message
-  alias OffBroadway.MQTTProducer.Acknowledger
   alias OffBroadway.MQTTProducer.Data
-  alias OffBroadway.MQTTProducer.Queue
 
-  defstruct queue: nil, acknowledger: nil, meta: nil, sub_ack: nil
+  defstruct queue: nil,
+            config: nil,
+            meta: nil,
+            sub_ack: nil,
+            client_id: nil
 
   def init(opts) do
+    config = Keyword.fetch!(opts, :config)
     queue_name = Keyword.fetch!(opts, :queue)
-    acknowledger = Keyword.get(opts, :acknowledger) || Acknowledger
+    client_id = Keyword.fetch!(opts, :client_id)
     meta = Keyword.get(opts, :meta) || %{}
     Logger.debug("initializing client", Enum.into(meta, []))
 
     {:ok,
      %__MODULE__{
+       config: config,
        meta: meta,
+       client_id: client_id,
        queue: queue_name,
-       acknowledger: acknowledger,
        sub_ack: opts[:sub_ack]
      }}
   end
@@ -37,34 +43,32 @@ defmodule OffBroadway.MQTTProducer.Handler do
     {:ok, state}
   end
 
-  def handle_message(topic, payload, %{queue: queue} = state) do
+  def handle_message(topic, payload, %{config: config, queue: queue} = state) do
     message = wrap_message(state, topic, payload)
-
-    :ok = Queue.enqueue(queue, message)
+    :ok = config.queue.enqueue(queue, message)
     {:ok, state}
   end
 
-  def subscription(status, topic_filter, %{sub_ack: nil} = state) do
+  def subscription(status, topic_filter, state) do
     Logger.debug(
       "client subscription #{status} on #{topic_filter}",
       Enum.into(state.meta, [])
     )
 
-    {:ok, state}
+    {:ok, maybe_suback(state, topic_filter, status)}
   end
 
-  def subscription(
-        status,
-        topic_filter,
-        %{sub_ack: sub_ack, meta: %{client_id: client_id}} = state
-      ) do
-    Logger.debug(
-      "client subscription #{status} on #{topic_filter}",
-      Enum.into(state.meta, [])
-    )
+  defp maybe_suback(%{sub_ack: nil} = state, _, _), do: state
 
-    send(sub_ack, {:subscription, client_id, topic_filter, status})
-    {:ok, state}
+  defp maybe_suback(
+         %{sub_ack: dest, client_id: client_id} = state,
+         topic_filter,
+         status
+       ) do
+    if Process.alive?(dest),
+      do: send(dest, {:subscription, client_id, topic_filter, status})
+
+    state
   end
 
   def terminate(_reason, _state) do
@@ -72,7 +76,7 @@ defmodule OffBroadway.MQTTProducer.Handler do
   end
 
   defp wrap_message(
-         %{meta: meta, acknowledger: acknowledger, queue: queue},
+         %{meta: meta, config: config, queue: queue},
          topic,
          payload
        ) do
@@ -81,7 +85,7 @@ defmodule OffBroadway.MQTTProducer.Handler do
     %Message{
       data: %Data{topic: topic, acc: payload},
       metadata: Map.merge(meta, %{topic: topic}),
-      acknowledger: {acknowledger, topic, ack_data}
+      acknowledger: {config.acknowledger, topic, ack_data}
     }
   end
 end

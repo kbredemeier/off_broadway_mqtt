@@ -87,12 +87,16 @@ defmodule OffBroadway.MQTTProducerCase do
     client_id = OffBroadway.MQTTProducer.unique_client_id()
     subscriptions = Map.get(context, :subscriptions) || []
 
-    %{conn: {_, mqtt_opts}} = OffBroadway.MQTTProducer.config()
+    server_opts =
+      :off_broadway_mqtt_producer
+      |> Application.get_all_env()
+      |> Keyword.get(:server_opts, [])
+      |> Keyword.drop([:protocol])
 
     tortoise_opts = [
       client_id: client_id,
       handler: {OffBroadway.MQTTProducer.TestHandler, [pid: self()]},
-      server: {Tortoise.Transport.Tcp, mqtt_opts},
+      server: {Tortoise.Transport.Tcp, server_opts},
       subscriptions: subscriptions
     ]
 
@@ -102,7 +106,7 @@ defmodule OffBroadway.MQTTProducerCase do
       {:test_mqtt_client, :up} -> :ok
     after
       5000 ->
-        raise "test mqtt client connection timed out: #{inspect(mqtt_opts)}"
+        raise "test mqtt client connection timed out: #{inspect(server_opts)}"
     end
 
     context
@@ -114,15 +118,21 @@ defmodule OffBroadway.MQTTProducerCase do
   context.
   """
   def start_queue(%{test: test_name} = context) do
-    registry = Map.get(context, :registry, OffBroadway.MQTTProducer.QueueRegistry)
+    registry =
+      Map.get(context, :registry, OffBroadway.MQTTProducer.QueueRegistry)
 
     queue_name =
       context
       |> Map.get(:start_queue, test_name)
       |> case do
-        {:via, _, _} = reg_name -> reg_name
-        true -> OffBroadway.MQTTProducer.queue_name(registry, to_string(test_name))
-        name -> OffBroadway.MQTTProducer.queue_name(registry, name)
+        {:via, _, _} = reg_name ->
+          reg_name
+
+        true ->
+          OffBroadway.MQTTProducer.queue_name(registry, to_string(test_name))
+
+        name ->
+          OffBroadway.MQTTProducer.queue_name(registry, name)
       end
 
     {:via, _, {_, topic}} = queue_name

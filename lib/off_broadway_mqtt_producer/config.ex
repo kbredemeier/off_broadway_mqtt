@@ -4,30 +4,44 @@ defmodule OffBroadway.MQTTProducer.Config do
   @default_port 1883
   @default_dequeue_interval 5000
   @default_client_id_prefix "off_broadway_mqtt_producer"
+  @default_supervisor OffBroadway.MQTTProducer.QueueSupervisor
+  @default_registry OffBroadway.MQTTProducer.QueueRegistry
 
   @moduledoc """
   Defines a data structure for configuring this library.
 
   ## Config options
 
+    * `dequeue_interval` - The interval used by the producer to timout polls to
+      the queue process. Defaults to `#{inspect(@default_dequeue_interval)}`.
     * `client_id_prefix` - The value is used to prefix the randomly generated
       client ids by the MQTT client. Defaults to
       #{inspect(@default_client_id_prefix)}.
-    * `server_opts`
-      * `host` - The host the MQTT client uses by default. Defaults to
-        `#{inspect(@default_host)}`.
-      * `port` - The port the MQTT client uses by default. Defaults to
-        `#{inspect(@default_port)}`.
-      * `transport` - The protocol the MQTT client uses by default. Defaults to
-        `#{inspect(@default_transport)}`.
-      * `host`, `port` and protocol with any other option given with the
-        `server_opts` are passed to `Tortoise` when starting the connection.
+    * `server_opts` - See the "Server options" section for details.
+
+  ### Server options
+
+  All options given with the `server_opts` option are passed to `Tortoise` when
+  starting the connection process. The following options can be given:
+
+    * `host` - The host the MQTT client uses by default. Defaults to
+      `#{inspect(@default_host)}`.
+    * `port` - The port the MQTT client uses by default. Defaults to
+      `#{inspect(@default_port)}`.
+    * `transport` - The protocol the MQTT client uses by default. Defaults to
+      `#{inspect(@default_transport)}`.
+    * See `Tortoise.Connection.start_link/1` for further options.
 
   ## Dependency injection
 
   Besides the other config options it is also possible to replace some modules
   used by providing an alternative implementation:
 
+    * `queue_supervisor` - The supervisor that supervises the queue processes
+      started by the producer. Defaults to `#{inspect(@default_supervisor)}`.
+    * `queue_registry` - The registry that is used to register the queue
+      processes started by the producer. Defaults to
+      `#{inspect(@default_registry)}`.
     * `acknowledger` - The `Broadway.Acknowledger` implementation used when
       building the message strucs.
     * `client` - The MQTT client module.
@@ -82,6 +96,8 @@ defmodule OffBroadway.MQTTProducer.Config do
           | {:client, module}
           | {:handler, module}
           | {:producer, module}
+          | {:queue_supervisor, GenServer.name()}
+          | {:queue_registry, GenServer.name()}
           | {:queue, module}
           | {:dequeue_interval, non_neg_integer}
           | {atom, any}
@@ -96,6 +112,8 @@ defmodule OffBroadway.MQTTProducer.Config do
           handler: module,
           producer: module,
           queue: module,
+          queue_supervisor: GenServer.name(),
+          queue_registry: GenServer.name(),
           dequeue_interval: non_neg_integer
         }
 
@@ -107,6 +125,8 @@ defmodule OffBroadway.MQTTProducer.Config do
     :handler,
     :producer,
     :queue,
+    :queue_supervisor,
+    :queue_registry,
     :server
   ]
 
@@ -165,6 +185,8 @@ defmodule OffBroadway.MQTTProducer.Config do
       |> Keyword.put_new(:handler, Handler)
       |> Keyword.put_new(:producer, Producer)
       |> Keyword.put_new(:queue, Queue)
+      |> Keyword.put_new(:queue_registry, @default_registry)
+      |> Keyword.put_new(:queue_supervisor, @default_supervisor)
 
     struct(__MODULE__, struct_opts)
   end

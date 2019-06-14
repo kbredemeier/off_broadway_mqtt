@@ -10,6 +10,8 @@ defmodule OffBroadway.MQTTProducer.ConfigTest do
     dequeue_interval
     handler
     queue
+    queue_registry
+    queue_supervisor
   )a
 
   describe "new/2" do
@@ -21,6 +23,8 @@ defmodule OffBroadway.MQTTProducer.ConfigTest do
       assert Code.ensure_compiled?(config.queue)
       assert config.client_id_prefix == "off_broadway_mqtt_producer"
       assert config.dequeue_interval == 5000
+      assert config.queue_registry == OffBroadway.MQTTProducer.QueueRegistry
+      assert config.queue_supervisor == OffBroadway.MQTTProducer.QueueSupervisor
     end
 
     test "reads config from Application environment" do
@@ -32,7 +36,7 @@ defmodule OffBroadway.MQTTProducer.ConfigTest do
       assert Config.new(config_opts) == Config.new(:default, [])
     end
 
-    test "adds additional values to server" do
+    test "adds additional opts to server" do
       assert %{server: {_, applied_opts}} =
                Config.new(server_opts: [password: "foo"])
 

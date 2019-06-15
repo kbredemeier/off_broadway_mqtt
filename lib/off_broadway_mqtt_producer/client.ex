@@ -23,6 +23,7 @@ defmodule OffBroadway.MQTTProducer.Client do
   @type option ::
           {:handler_opts, keyword}
           | {:sub_ack, nil | Process.dest()}
+          | {:client_id, String.t()}
           | {atom, any}
 
   @type options :: [option]
@@ -35,6 +36,8 @@ defmodule OffBroadway.MQTTProducer.Client do
 
   ## Options
 
+    * `:client_id` - Can be used to set the client id for the connection. If not
+      given a random client id is generated.
     * `:sub_ack` - Can be used to inject a subscriber for subscription events.
       The subscriber receives a message in the form
       `{:subscription, client_id, topic, status}`.
@@ -56,7 +59,11 @@ defmodule OffBroadway.MQTTProducer.Client do
   end
 
   def start(%Config{} = config, {topic, qos}, queue_name, opts) do
-    client_id = MQTTProducer.unique_client_id(config)
+    client_id =
+      Keyword.get_lazy(opts, :client_id, fn ->
+        MQTTProducer.unique_client_id(config)
+      end)
+
     {_, server_opts} = server = get_mqtt_server(config)
 
     meta =

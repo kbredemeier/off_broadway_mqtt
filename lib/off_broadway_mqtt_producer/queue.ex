@@ -1,32 +1,35 @@
 defmodule OffBroadway.MQTTProducer.Queue do
   @moduledoc """
-  This `Genserver` is used as a message queue to buffer incoming messages.
-  The incoming messages are dequeued by broadway whenever demanded by a
-  consumer.
+  Implemens a inmemory queue to buffer incoming messages for a subscription
+  from a MQTT broker.
   """
   use GenServer
 
-  @callback start(Supervisor.name(), GenServer.name()) ::
-              :ok | :ignore | {:error, any}
+  alias OffBroadway.MQTTProducer
 
-  @callback enqueue(GenServer.name(), any) :: :ok
-  @callback dequeue(GenServer.name(), non_neg_integer) :: [any]
-
-  @doc """
-  Starts a supervised queue.
-  """
-  def start(supervisor, name) do
-    case DynamicSupervisor.start_child(supervisor, {__MODULE__, name}) do
-      {:error, {:already_started, _}} -> :ok
-      {:ok, _} -> :ok
-      error -> error
-    end
-  end
+  @typedoc "Type for queue_names"
+  @type name :: GenServer.name() | MQTTProducer.name()
 
   @doc """
-  Starts a queue.
+  Called by the producer to start a new queue.
+  This usually receives a `t:MQTTProducer.queue_name/0` as argument.
   """
-  @spec start_link(GenServer.name()) :: GenServer.on_start()
+  @callback start_link(name) :: GenServer.on_start()
+
+  @doc """
+  Called by the producer to dequeue messages.
+  """
+  @callback enqueue(name, any) :: :ok
+
+  @doc """
+  Called by the `Tortoise.Handler` to enqueue incoming messages.
+  """
+  @callback dequeue(name, non_neg_integer) :: [any]
+
+  @doc """
+  Starts a queue with the given name.
+  """
+  @spec start_link(name) :: GenServer.on_start()
   def start_link(queue_name) do
     GenServer.start_link(__MODULE__, [], name: queue_name)
   end
@@ -42,17 +45,19 @@ defmodule OffBroadway.MQTTProducer.Queue do
   end
 
   @doc """
-  Stores a new message in the topic queue.
+  Enqueues the message.
   """
-  def enqueue(queue, message) do
-    GenServer.call(queue, {:enqueue, message})
+  @spec enqueue(name, any) :: :ok
+  def enqueue(queue_name, message) do
+    GenServer.call(queue_name, {:enqueue, message})
   end
 
   @doc """
-  Dequeues messages from a topic queue.
+  Dequeues the demanded amount of messages from the given queue.
   """
-  def dequeue(topic, demand) do
-    GenServer.call(topic, {:dequeue, demand})
+  @spec enqueue(name, non_neg_integer) :: [any]
+  def dequeue(queue_name, demand) do
+    GenServer.call(queue_name, {:dequeue, demand})
   end
 
   @impl true

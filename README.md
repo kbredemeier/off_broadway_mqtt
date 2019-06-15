@@ -1,6 +1,6 @@
 # OffBroadway.MQTTProducer
 
-A MQTT connector for [broadway](https://github.com/plataformatec/broadway).
+A MQTT connector for [Broadway](https://github.com/plataformatec/broadway).
 
 ## Installation
 
@@ -21,14 +21,12 @@ end
 defmodule OffBroadway.MQTTProducer.TestBroadway do
   use OffBroadway.MQTTProducer
 
-  def start_link(topic) do
+  def start_link(config, topic) do
     Broadway.start_link(__MODULE__,
       name: name,
       producers: [
         default: [
-          module: {Producer, [
-            topic: {topic, 0}
-          ]},
+          module: {Producer, [config, subscription: {topic, 0}]},
           stages: 1
         ]
       ],

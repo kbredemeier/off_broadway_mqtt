@@ -48,9 +48,10 @@ defmodule OffBroadway.MQTTProducer.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:gen_stage, "~> 0.14"},
-      {:tortoise, "~> 0.9"},
       {:broadway, "~> 0.3.0"},
+      {:gen_stage, "~> 0.14"},
+      {:telemetry, "~> 0.4.0"},
+      {:tortoise, "~> 0.9"},
       {:credo, "~> 1.0", only: [:dev, :test]},
       {:ex_doc, "~> 0.19.2", only: :dev, runtime: false},
       {:excoveralls, "~> 0.10", only: :test}

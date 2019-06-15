@@ -7,7 +7,6 @@ defmodule OffBroadway.MQTTProducerCase do
 
   use ExUnit.CaseTemplate
 
-  alias OffBroadway.MQTTProducer
   alias OffBroadway.MQTTProducer.Queue
   alias OffBroadway.MQTTProducer.Config
 
@@ -93,7 +92,7 @@ defmodule OffBroadway.MQTTProducerCase do
       context
       |> Map.get(:start_mqtt_client, [])
       |> case do
-        [] -> {MQTTProducer.unique_client_id(), []}
+        [] -> {build_test_client_id(), []}
         {client_id, subscriptions} -> {client_id, subscriptions}
         client_id -> {client_id, []}
       end
@@ -159,20 +158,29 @@ defmodule OffBroadway.MQTTProducerCase do
   Returns options to start `OffBroadway.MQTTProducer.TestBroadway` with.
   """
   def test_broadway_opts_from_context(context, overrides \\ []) do
-    producer_opts =
-      context
-      |> Map.take([:registry, :supervisor])
-      |> Enum.into([])
-      |> Keyword.put_new(:dequeue_interval, 100)
-
     [
       name: :"#{context.test}_broadway",
       topic: "#{context.test}_topic",
-      producer_opts: producer_opts
+      producer_opts: [
+        client_id: build_test_client_id(),
+        sub_ack: self()
+      ]
     ]
     |> Keyword.merge(overrides)
   end
 
+  @doc """
+  Builds a random but unique client id.
+  """
+  def build_test_client_id do
+    "test_client_#{System.unique_integer([:positive])}"
+  end
+
+  @doc """
+  Builds a configuration from the context.
+
+  It adds the supervisor and registry if avalilable.
+  """
   def config_from_context(%{registry: reg, supervisor: sup}) do
     Config.new(:default, queue_registry: reg, queue_supervisor: sup)
   end

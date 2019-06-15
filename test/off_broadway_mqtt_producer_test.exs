@@ -34,7 +34,10 @@ defmodule OffBroadway.MQTTProducerTest do
   describe "queue_name" do
     test "returns the process name for a topic queue server" do
       assert {:via, Registry, {:foo, "bar"}} ==
-               OffBroadway.MQTTProducer.queue_name(:foo, "bar")
+               OffBroadway.MQTTProducer.queue_name(
+                 %{queue_registry: :foo},
+                 "bar"
+               )
     end
 
     test "returns the process name with the default registry" do

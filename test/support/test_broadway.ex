@@ -3,10 +3,10 @@ defmodule OffBroadway.MQTTProducer.TestBroadway do
 
   use OffBroadway.MQTTProducer
 
-  def start_link(opts) do
+  def start_link(config, opts) do
     test_pid = self()
     topic = Keyword.fetch!(opts, :topic)
-    name = opts[:name] || __MODULE__
+    name = Keyword.fetch!(opts, :name)
 
     batch_fun =
       opts[:batch_fun] ||
@@ -24,9 +24,10 @@ defmodule OffBroadway.MQTTProducer.TestBroadway do
 
     producer_opts =
       opts
-      |> Keyword.get(:producer_opts, [])
-      |> Keyword.put(:topic, topic)
-      |> Keyword.put(:sub_ack, test_pid)
+      |> Keyword.fetch!(:producer_opts)
+      |> Keyword.put_new(:sub_ack, test_pid)
+
+    producer_opts = [config, {:subscription, {topic, 0}}] ++ producer_opts
 
     Broadway.start_link(__MODULE__,
       name: name,

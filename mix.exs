@@ -5,7 +5,7 @@ defmodule OffBroadway.MQTTProducer.MixProject do
     [
       app: :off_broadway_mqtt_producer,
       deps: deps(),
-      docs: [extras: ["README.md"]],
+      docs: [main: "readme", extras: ["README.md"]],
       elixir: "~> 1.8",
       elixirc_paths: elixirc_paths(Mix.env()),
       package: package(),

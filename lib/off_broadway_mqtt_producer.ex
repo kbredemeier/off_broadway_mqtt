@@ -41,7 +41,7 @@ defmodule OffBroadway.MQTTProducer do
   end
 
   @doc """
-  Adds the second argument as error to the message(s).
+  Adds the second argument as error to one or many message(s).
   """
   @spec fail_msg([Message.t()], Exception.t()) :: [Message.t()]
   @spec fail_msg(Message.t(), Exception.t()) :: Message.t()
@@ -75,14 +75,26 @@ defmodule OffBroadway.MQTTProducer do
   @doc """
   Returns the name for the queue belonging to the given topic.
   """
-  @spec queue_name(atom, topic) :: {:via, Registry, {atom, topic}}
-  def queue_name(
-        registry \\ OffBroadway.MQTTProducer.QueueRegistry,
-        topic
-      )
-      when is_binary(topic) and is_atom(registry) do
+  @spec queue_name(topic) :: {:via, Registry, {atom, topic}}
+  def queue_name(topic)
+
+  def queue_name(topic) do
+    :default |> config() |> queue_name(topic)
+  end
+
+  @doc """
+  Returns the name for the queue belonging to the given topic.
+  """
+  @spec queue_name(config, topic) :: {:via, Registry, {atom, topic}}
+  def queue_name(%{queue_registry: registry}, topic) when is_binary(topic) do
     {:via, Registry, {registry, topic}}
   end
+
+  @doc """
+  Returns the topic name from a `t:queue_name/0`.
+  """
+  @spec topic_from_queue_name(queue_name) :: topic
+  def topic_from_queue_name({:via, _, {_, topic}}), do: topic
 
   @doc """
   Returns the runtime configuration for OffBroadway.MQTTProducer.

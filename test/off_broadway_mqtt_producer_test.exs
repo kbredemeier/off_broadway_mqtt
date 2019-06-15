@@ -7,7 +7,7 @@ defmodule OffBroadway.MQTTProducerTest do
 
   describe "unique_client_id_/1" do
     test "returns a string" do
-      assert id = OffBroadway.MQTTProducer.unique_client_id()
+      assert id = MQTTProducer.unique_client_id()
       assert is_binary(id)
       assert Regex.match?(~r/^off_broadway_mqtt_producer_.+/, id)
     end
@@ -15,7 +15,7 @@ defmodule OffBroadway.MQTTProducerTest do
     test "returns unique client ids" do
       ids =
         for _ <- 1..100 do
-          OffBroadway.MQTTProducer.unique_client_id()
+          MQTTProducer.unique_client_id()
         end
 
       assert ids == Enum.uniq(ids)
@@ -23,7 +23,7 @@ defmodule OffBroadway.MQTTProducerTest do
 
     test "takes the client_id_prefix from config" do
       assert id =
-               OffBroadway.MQTTProducer.unique_client_id(%{
+               MQTTProducer.unique_client_id(%{
                  client_id_prefix: "asd"
                })
 
@@ -31,18 +31,25 @@ defmodule OffBroadway.MQTTProducerTest do
     end
   end
 
+  test "topic_from_queue_name/1" do
+    assert "test" =
+             MQTTProducer.topic_from_queue_name(
+               {:via, Registry, {:foo, "test"}}
+             )
+  end
+
   describe "queue_name" do
     test "returns the process name for a topic queue server" do
       assert {:via, Registry, {:foo, "bar"}} ==
-               OffBroadway.MQTTProducer.queue_name(
+               MQTTProducer.queue_name(
                  %{queue_registry: :foo},
                  "bar"
                )
     end
 
     test "returns the process name with the default registry" do
-      assert {:via, Registry, {OffBroadway.MQTTProducer.QueueRegistry, "bar"}} ==
-               OffBroadway.MQTTProducer.queue_name("bar")
+      assert {:via, Registry, {MQTTProducer.QueueRegistry, "bar"}} ==
+               MQTTProducer.queue_name("bar")
     end
   end
 
@@ -51,13 +58,13 @@ defmodule OffBroadway.MQTTProducerTest do
       assert %Config{
                client_id_prefix: "off_broadway_mqtt_producer",
                server: {:tcp, [host: 'vernemq', port: 1883]}
-             } = OffBroadway.MQTTProducer.config()
+             } = MQTTProducer.config()
     end
 
     test "sets transport" do
       assert %Config{
                server: {:ssl, _}
-             } = OffBroadway.MQTTProducer.config(server_opts: [transport: :ssl])
+             } = MQTTProducer.config(server_opts: [transport: :ssl])
     end
   end
 end

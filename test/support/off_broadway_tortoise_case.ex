@@ -17,6 +17,7 @@ defmodule OffBroadway.MQTTProducerCase do
       import OffBroadway.MQTTProducer.Factory
       import OffBroadway.MQTTProducerCase
 
+      alias OffBroadway.MQTTProducer
       alias OffBroadway.MQTTProducer.Data
       alias OffBroadway.MQTTProducer.Queue
     end

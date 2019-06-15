@@ -1,17 +1,14 @@
 defmodule OffBroadway.MQTTProducer.Producer do
   @moduledoc """
-  Acts as Producer for messages from mqtt a mqtt topic subscription.
-  A produce connects to the given topic with with given QOS level and produces
-  `t:Broadway.Message.t/0` events from the incoming messages.
+  Acts as Producer for messages from a MQTT topic subscription.
 
-  Internally this producer
-  * implements the `GenStage` behaviour as a producer
-  * starts a mqtt client and subscribes it to the given topic
-  * and starts a queue that serves as buffer for incoming messages
-  * dequeues messages if receiving demand from a consumer
+  Once started, it starts a queue that is going to buffer the incoming messages,
+  connects to the MQTT broker and subscribes to the provided topic.
 
-  Whenever a consumer demands messages from the producer it dequeues them and
-  passes them to the consumer.
+  When the client receives messages from the broker it enqueues them to the
+  queue responsible for the subscription. Notice that if you are using a
+  subscription that contain any wildcards that one queue is responsible for
+  buffering all messages coming from that subscription.
   """
 
   use GenStage
@@ -19,64 +16,93 @@ defmodule OffBroadway.MQTTProducer.Producer do
   require Logger
 
   alias OffBroadway.MQTTProducer
+  alias OffBroadway.MQTTProducer.Client
+  alias OffBroadway.MQTTProducer.Config
 
   @behaviour Broadway.Producer
 
-  @default_dequeue_interval 5000
-
-  @default_queue OffBroadway.MQTTProducer.Queue
-  @default_queue_registry OffBroadway.MQTTProducer.QueueRegistry
-  @default_queue_supervisor OffBroadway.MQTTProducer.QueueSupervisor
-  @default_mqtt_client OffBroadway.MQTTProducer.Client
-
+  @typedoc "The internal state of the producer"
   @type state :: %{
+          client_id: String.t(),
+          config: Config.t(),
           demand: non_neg_integer,
-          dequeue_timer: non_neg_integer,
-          dequeue_interval: nil | reference,
-          queue: {module, GenServer.name()}
+          dequeue_timer: reference,
+          queue: GenServer.name()
         }
 
   @impl true
-  @spec init(options) :: {:ok, state}
-        when option:
-               {:dequeue_interval, non_neg_integer}
-               | {:queue, module}
-               | {:registry, GenServer.name()}
-               | {:supervisor, GenServer.name()}
-               | {:client, module}
-               | {:topic, MQTTProducer.topic()}
-               | {:qos, MQTTProducer.qos()}
-               | {:connection, {atom, [term]}}
-               | {:sub_ack, Process.dest()},
-             options: [option, ...]
-  def init(opts) do
-    dequeue_interval = opts[:dequeue_interval] || @default_dequeue_interval
-    queue = opts[:queue] || @default_queue
-    registry = opts[:registry] || @default_queue_registry
-    supervisor = opts[:supervisor] || @default_queue_supervisor
+  @spec init(args) ::
+          {:producer, state}
+          | {:stop, {:client, :already_started}}
+          | {:stop, {:client, :ignore}}
+          | {:stop, {:client, term}}
+          | {:stop, {:queue, :ignore}}
+          | {:stop, {:queue, term}}
+        when args: nonempty_improper_list(Config.t(), opts),
+             opt: {:subscription, MQTTProducer.subscription()} | Client.option(),
+             opts: [opt, ...]
+  def init([%Config{} = config, {:subscription, {topic, qos} = sub} | opts]) do
+    queue_name = MQTTProducer.queue_name(config, topic)
 
-    client = opts[:client] || @default_mqtt_client
-    topic = opts[:topic]
-    qos = opts[:qos] || 0
-    conn = opts[:connection] || :default
-    client_opts = Keyword.take(opts, [:sub_ack])
+    :ok =
+      config
+      |> config_to_metadata()
+      |> Keyword.put(:qos, qos)
+      |> Keyword.put(:topic, topic)
+      |> Logger.metadata()
 
-    queue_name = MQTTProducer.queue_name(registry, topic)
+    client_opts =
+      opts
+      |> Keyword.put_new_lazy(:client_id, fn ->
+        MQTTProducer.unique_client_id(config)
+      end)
 
-    with :ok <- queue.start(supervisor, queue_name),
-         {:ok, _} <- client.start(conn, {topic, qos}, queue_name, client_opts) do
+    with :ok <- start_queue(config, queue_name),
+         :ok <- start_client(config, sub, queue_name, client_opts) do
       {:producer,
        %{
+         client_id: client_opts[:client_id],
+         config: config,
          demand: 0,
          dequeue_timer: nil,
-         dequeue_interval: dequeue_interval,
-         queue: {queue, queue_name}
+         queue: queue_name
        }}
     else
+      {:error, reason} -> {:stop, reason}
+    end
+  end
+
+  defp start_client(
+         %{client: client} = config,
+         {topic, qos},
+         queue_name,
+         client_opts
+       ) do
+    case client.start(config, {topic, qos}, queue_name, client_opts) do
+      {:ok, _} -> :ok
+      {:error, {:already_started, _}} -> {:error, {:client, :already_started}}
+      :ignore -> {:error, {:client, :ignore}}
+      {:error, reason} -> {:error, {:client, reason}}
+    end
+  end
+
+  defp start_queue(config, queue_name) do
+    child_spec = config.queue.child_spec(queue_name)
+
+    case DynamicSupervisor.start_child(config.queue_supervisor, child_spec) do
+      {:ok, _} ->
+        :ok
+
+      {:error, {:already_started, _}} ->
+        topic = MQTTProducer.topic_from_queue_name(queue_name)
+        Logger.warn("queue for topic #{inspect(topic)} is already started")
+        :ok
+
+      :ignore ->
+        {:error, {:queue, :ignore}}
+
       {:error, reason} ->
-        raise ArgumentError,
-              "invalid options given to #{inspect(client)}.init/1, " <>
-                "#{inspect(reason)}"
+        {:error, {:queue, reason}}
     end
   end
 
@@ -95,14 +121,16 @@ defmodule OffBroadway.MQTTProducer.Producer do
     {:noreply, [], state}
   end
 
-  defp handle_dequeue_messages(%{dequeue_timer: nil, demand: demand} = state)
+  defp handle_dequeue_messages(
+         %{dequeue_timer: nil, demand: demand, config: config} = state
+       )
        when demand > 0 do
     messages = dequeue_messages_from_queue(state, demand)
     new_demand = demand - length(messages)
 
     dequeue_timer =
       case {messages, new_demand} do
-        {[], _} -> schedule_dequeue_messages(state.dequeue_interval)
+        {[], _} -> schedule_dequeue_messages(config.dequeue_interval)
         {_, 0} -> nil
         _ -> schedule_dequeue_messages(0)
       end
@@ -116,13 +144,27 @@ defmodule OffBroadway.MQTTProducer.Producer do
   end
 
   defp dequeue_messages_from_queue(
-         %{queue: {queue, name}},
+         %{queue: queue_name, config: config},
          total_demand
        ) do
-    queue.dequeue(name, total_demand)
+    config.queue.dequeue(queue_name, total_demand)
   end
 
   defp schedule_dequeue_messages(interval) do
     Process.send_after(self(), :dequeue_messages, interval)
+  end
+
+  defp config_to_metadata(config) do
+    {transport, opts} = config.server
+
+    opts
+    |> Keyword.put(:transport, transport)
+    |> hide_password
+  end
+
+  defp hide_password(meta) do
+    if Keyword.has_key?(meta, :password),
+      do: Keyword.update!(meta, :password, fn _ -> "******" end),
+      else: meta
   end
 end

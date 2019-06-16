@@ -13,6 +13,7 @@ defmodule OffBroadway.MQTTProducer.Handler do
 
   alias Broadway.Message
   alias OffBroadway.MQTTProducer.Data
+  alias OffBroadway.MQTTProducer.Telemetry
 
   defstruct queue: nil,
             config: nil,
@@ -40,11 +41,7 @@ defmodule OffBroadway.MQTTProducer.Handler do
   def connection(status, %{config: config} = state) do
     Logger.debug("client attempting to connect", Enum.into(state.meta, []))
 
-    :telemetry.execute(
-      [config.telemetry_prefix, :client, :connection, status],
-      %{count: 1},
-      state.meta
-    )
+    Telemetry.client_connection_status(config, status, state.meta)
 
     {:ok, state}
   end
@@ -53,11 +50,7 @@ defmodule OffBroadway.MQTTProducer.Handler do
     message = wrap_message(state, topic, payload)
     :ok = config.queue.enqueue(queue, message)
 
-    :telemetry.execute(
-      [config.telemetry_prefix, :client, :messages],
-      %{count: 1},
-      state.meta
-    )
+    Telemetry.client_message_received(config, state.meta)
 
     {:ok, state}
   end
@@ -68,11 +61,7 @@ defmodule OffBroadway.MQTTProducer.Handler do
       Enum.into(state.meta, [])
     )
 
-    :telemetry.execute(
-      [config.telemetry_prefix, :client, :subscription, status],
-      %{count: 1},
-      state.meta
-    )
+    Telemetry.client_subscription_status(config, status, state.meta)
 
     {:ok, maybe_suback(state, topic_filter, status)}
   end

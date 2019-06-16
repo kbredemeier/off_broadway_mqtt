@@ -12,6 +12,7 @@ defmodule OffBroadway.MQTTProducer.Acknowledger do
   require Logger
 
   alias OffBroadway.MQTTProducer.Config
+  alias OffBroadway.MQTTProducer.Telemetry
 
   @behaviour Broadway.Acknowledger
 
@@ -114,17 +115,8 @@ defmodule OffBroadway.MQTTProducer.Acknowledger do
            metadata: metadata
          } = message
        ) do
-    :telemetry.execute(
-      [config.telemetry_prefix, :acknowledger, suffix_from_status(status)],
-      %{count: 1},
-      metadata
-    )
+    Telemetry.acknowledger_status(config, status, metadata)
 
     message
   end
-
-  defp suffix_from_status(:ok), do: :success
-  defp suffix_from_status({:failed, %{ack: :ignore}}), do: :ignored
-  defp suffix_from_status({:failed, %{ack: :retry}}), do: :requeued
-  defp suffix_from_status({:failed, _}), do: :failed
 end

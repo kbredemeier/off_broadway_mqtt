@@ -7,6 +7,7 @@ defmodule OffBroadway.MQTTProducer.Queue do
 
   alias OffBroadway.MQTTProducer
   alias OffBroadway.MQTTProducer.Config
+  alias OffBroadway.MQTTProducer.Telemetry
 
   @typedoc "Type for queue_names"
   @type name :: GenServer.name() | MQTTProducer.name()
@@ -76,11 +77,9 @@ defmodule OffBroadway.MQTTProducer.Queue do
     updated_queue = :queue.in(msg, queue)
     new_size = size + 1
 
-    :telemetry.execute(
-      [config.telemetry_prefix, :queue, :in],
-      %{count: 1, size: new_size},
+    Telemetry.queue_in(config, new_size, fn ->
       state_to_telemetry_meta(state)
-    )
+    end)
 
     {:reply, :ok, %{state | queue: updated_queue, size: new_size}}
   end
@@ -94,11 +93,9 @@ defmodule OffBroadway.MQTTProducer.Queue do
     {remaining, messages, taken} = take(queue, demand)
     new_size = size - taken
 
-    :telemetry.execute(
-      [config.telemetry_prefix, :queue, :out],
-      %{count: taken, size: new_size},
+    Telemetry.queue_out(config, taken, new_size, fn ->
       state_to_telemetry_meta(state)
-    )
+    end)
 
     {:reply, messages, %{state | queue: remaining, size: new_size}}
   end

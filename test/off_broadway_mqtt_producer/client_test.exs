@@ -9,19 +9,24 @@ defmodule OffBroadway.MQTTProducer.ClientTest do
   @moduletag start_supervisor: true
   @moduletag start_registry: true
   @moduletag start_queue: true
+  @moduletag build_config: true
 
-  test "starts a process", %{queue: queue, queue_topic: topic} do
-    assert {:ok, pid} = Client.start(:default, {topic, 0}, queue)
+  test "starts a process", %{queue: queue, queue_topic: topic, config: config} do
+    assert {:ok, pid} = Client.start(config, {topic, 0}, queue)
 
     assert Process.alive?(pid)
     refute_receive _, 1000
   end
 
-  test "sends a message if subscribed", %{queue: queue, queue_topic: topic} do
+  test "sends a message if subscribed", %{
+    queue: queue,
+    queue_topic: topic,
+    config: config
+  } do
     client_id = "test_client_#{System.unique_integer([:positive])}"
 
     assert {:ok, _pid} =
-             Client.start(:default, {topic, 0}, queue,
+             Client.start(config, {topic, 0}, queue,
                sub_ack: self(),
                client_id: client_id
              )
@@ -29,19 +34,27 @@ defmodule OffBroadway.MQTTProducer.ClientTest do
     assert_receive_sub_ack(client_id, topic)
   end
 
-  test "generates a client_id", %{queue: queue, queue_topic: topic} do
+  test "generates a client_id", %{
+    queue: queue,
+    queue_topic: topic,
+    config: config
+  } do
     assert {:ok, _pid} =
-             Client.start(:default, {topic, 0}, queue, sub_ack: self())
+             Client.start(config, {topic, 0}, queue, sub_ack: self())
 
-    assert_receive {:subscription, client_id, _, :up}
+    assert_receive {:subscription, client_id, _, :up}, 1000
     assert String.starts_with?(client_id, "off_broadway")
   end
 
-  test "starts a tortoise connection", %{queue: queue, queue_topic: topic} do
+  test "starts a tortoise connection", %{
+    queue: queue,
+    queue_topic: topic,
+    config: config
+  } do
     assert {:ok, _pid} =
-             Client.start(:default, {topic, 0}, queue, sub_ack: self())
+             Client.start(config, {topic, 0}, queue, sub_ack: self())
 
-    assert_receive {:subscription, client_id, _, :up}
+    assert_receive {:subscription, client_id, _, :up}, 1000
     assert_mqtt_client_running(client_id)
   end
 
@@ -55,30 +68,5 @@ defmodule OffBroadway.MQTTProducer.ClientTest do
              Client.start(config, {topic, 0}, queue, handler_opts: [pid: self()])
 
     assert_receive {:test_mqtt_client, :up}, 2000
-  end
-
-  describe "telemetry events" do
-    test "sends telemetry event if connection comes up",
-         %{
-           queue_topic: topic,
-           queue: queue
-         } do
-      test_pid = self()
-
-      handle_event = fn event, topic, data, extra ->
-        send(test_pid, {:telemetry, event, topic, data, extra})
-      end
-
-      event = [:off_broadway_mqtt_producer, :client, :connection, :up]
-      :telemetry.attach("test", event, handle_event, nil)
-
-      Client.start(:default, {topic, 0}, queue)
-      assert_receive {:telemetry, ^event, %{count: 1}, meta, nil}
-      assert meta.topic_filter == topic
-      assert meta.qos
-      assert meta.client_id
-      assert meta.host
-      assert meta.port
-    end
   end
 end

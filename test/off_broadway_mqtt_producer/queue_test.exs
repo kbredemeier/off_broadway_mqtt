@@ -1,9 +1,22 @@
 defmodule OffBroadway.MQTTProducer.QueueTest do
   use OffBroadway.MQTTProducerCase, async: true
 
-  test "start_link/1 starts a queue under the given name", %{test: test} do
-    assert {:ok, pid} = Queue.start_link(test)
-    assert is_pid(Process.whereis(test))
+  @moduletag build_config: true
+
+  @tag start_registry: true
+  test "start_link/1 starts a queue under the given name", %{
+    config: config,
+    registry: registry,
+    test: test
+  } do
+    assert {:ok, pid} =
+             Queue.start_link([
+               config,
+               {:via, Registry, {registry, test}}
+             ])
+
+    assert Process.alive?(pid)
+    assert [{^pid, _}] = Registry.lookup(registry, test)
   end
 
   @tag :start_queue

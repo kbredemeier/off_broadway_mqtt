@@ -11,11 +11,15 @@ defmodule OffBroadway.MQTTProducer.Acknowledger do
 
   require Logger
 
-  alias OffBroadway.MQTTProducer.Queue
+  alias OffBroadway.MQTTProducer.Config
 
   @behaviour Broadway.Acknowledger
 
-  @type ack_data :: %{queue: GenServer.name(), tries: non_neg_integer}
+  @type ack_data :: %{
+          queue: GenServer.name(),
+          tries: non_neg_integer,
+          config: Config.t()
+        }
 
   @impl Broadway.Acknowledger
   def ack(topic, successful, failed) do
@@ -91,19 +95,27 @@ defmodule OffBroadway.MQTTProducer.Acknowledger do
   end
 
   defp maybe_requeue(
-         %{acknowledger: {_, _, %{queue: queue}}, status: {_, %{ack: :retry}}} =
-           message
+         %{
+           acknowledger: {_, _, %{config: config, queue: queue_name}},
+           status: {_, %{ack: :retry}}
+         } = message
        ) do
     updated_message = %{message | status: :ok}
-    Queue.enqueue(queue, updated_message)
+    config.queue.enqueue(queue_name, updated_message)
     updated_message
   end
 
   defp maybe_requeue(msg), do: msg
 
-  defp send_telemetry_event(%{status: status, metadata: metadata} = message) do
+  defp send_telemetry_event(
+         %{
+           acknowledger: {_, _, %{config: config}},
+           status: status,
+           metadata: metadata
+         } = message
+       ) do
     :telemetry.execute(
-      [:off_broadway_mqtt_producer, :acknowledger, suffix_from_status(status)],
+      [config.telemetry_prefix, :acknowledger, suffix_from_status(status)],
       %{count: 1},
       metadata
     )

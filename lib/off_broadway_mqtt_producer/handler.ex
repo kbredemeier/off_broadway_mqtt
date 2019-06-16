@@ -37,11 +37,11 @@ defmodule OffBroadway.MQTTProducer.Handler do
      }}
   end
 
-  def connection(status, state) do
+  def connection(status, %{config: config} = state) do
     Logger.debug("client attempting to connect", Enum.into(state.meta, []))
 
     :telemetry.execute(
-      [:off_broadway_mqtt_producer, :client, :connection, status],
+      [config.telemetry_prefix, :client, :connection, status],
       %{count: 1},
       state.meta
     )
@@ -54,7 +54,7 @@ defmodule OffBroadway.MQTTProducer.Handler do
     :ok = config.queue.enqueue(queue, message)
 
     :telemetry.execute(
-      [:off_broadway_mqtt_producer, :client, :messages],
+      [config.telemetry_prefix, :client, :messages],
       %{count: 1},
       state.meta
     )
@@ -62,14 +62,14 @@ defmodule OffBroadway.MQTTProducer.Handler do
     {:ok, state}
   end
 
-  def subscription(status, topic_filter, state) do
+  def subscription(status, topic_filter, %{config: config} = state) do
     Logger.debug(
       "client subscription #{status} on #{topic_filter}",
       Enum.into(state.meta, [])
     )
 
     :telemetry.execute(
-      [:off_broadway_mqtt_producer, :client, :subscription, status],
+      [config.telemetry_prefix, :client, :subscription, status],
       %{count: 1},
       state.meta
     )
@@ -99,7 +99,7 @@ defmodule OffBroadway.MQTTProducer.Handler do
          topic,
          payload
        ) do
-    ack_data = %{queue: queue, tries: 0}
+    ack_data = %{queue: queue, tries: 0, config: config}
     topic_str = Enum.join(topic, "/")
 
     %Message{

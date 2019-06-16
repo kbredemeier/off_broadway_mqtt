@@ -3,6 +3,7 @@ defmodule OffBroadway.MQTTProducer.Factory do
 
   alias Broadway.Message
   alias OffBroadway.MQTTProducer.Acknowledger
+  alias OffBroadway.MQTTProducer.Config
   alias OffBroadway.MQTTProducer.Data
 
   @doc """
@@ -15,9 +16,14 @@ defmodule OffBroadway.MQTTProducer.Factory do
     }
   end
 
-  def wrap_msg(data, queue_name) do
+  def wrap_msg(data, queue_name, config \\ nil) do
     {:via, _, {_, topic}} = queue_name
-    ack_data = %{queue: queue_name, tries: 0}
+
+    ack_data = %{
+      queue: queue_name,
+      tries: 0,
+      config: config || Config.new(:default)
+    }
 
     %Message{
       data: data,

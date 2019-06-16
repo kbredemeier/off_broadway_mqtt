@@ -26,7 +26,7 @@ defmodule OffBroadway.MQTTProducer.ConfigTest do
       assert config.dequeue_interval == 100
       assert config.queue_registry == OffBroadway.MQTTProducer.QueueRegistry
       assert config.queue_supervisor == OffBroadway.MQTTProducer.QueueSupervisor
-      assert config.telemetry_prefix == :off_broadway_mqtt_producer
+      assert config.telemetry_prefix == :test
     end
 
     test "reads config from Application environment" do

@@ -6,6 +6,7 @@ defmodule OffBroadway.MQTTProducer.Queue do
   use GenServer
 
   alias OffBroadway.MQTTProducer
+  alias OffBroadway.MQTTProducer.Config
 
   @typedoc "Type for queue_names"
   @type name :: GenServer.name() | MQTTProducer.name()
@@ -29,21 +30,26 @@ defmodule OffBroadway.MQTTProducer.Queue do
   @doc """
   Starts a queue with the given name.
   """
-  @spec start_link(name) :: GenServer.on_start()
-  def start_link(queue_name) do
-    GenServer.start_link(__MODULE__, queue_name, name: queue_name)
+  @spec start_link(args) :: GenServer.on_start()
+        when args: nonempty_improper_list(Config.t(), name)
+  def start_link([%Config{}, {:via, _, _} = queue_name] = args) do
+    GenServer.start_link(__MODULE__, args, name: queue_name)
   end
 
   @impl true
-  def init(queue_name) do
+  def init([config, queue_name]) do
     state = %{
+      config: config,
       name: queue_name,
+      topic_filter: MQTTProducer.topic_from_queue_name(queue_name),
       queue: :queue.new(),
       size: 0
     }
 
     {:ok, state}
   end
+
+  # defp queue_name({:via, _, _})
 
   @doc """
   Enqueues the message.
@@ -62,14 +68,18 @@ defmodule OffBroadway.MQTTProducer.Queue do
   end
 
   @impl true
-  def handle_call({:enqueue, msg}, _from, %{queue: queue, size: size} = state) do
+  def handle_call(
+        {:enqueue, msg},
+        _from,
+        %{config: config, queue: queue, size: size} = state
+      ) do
     updated_queue = :queue.in(msg, queue)
     new_size = size + 1
 
     :telemetry.execute(
-      [:off_broadway_mqtt_producer, :queue, :in],
-      %{count: 1},
-      %{queue: state.name}
+      [config.telemetry_prefix, :queue, :in],
+      %{count: 1, size: new_size},
+      state_to_telemetry_meta(state)
     )
 
     {:reply, :ok, %{state | queue: updated_queue, size: new_size}}
@@ -79,15 +89,15 @@ defmodule OffBroadway.MQTTProducer.Queue do
   def handle_call(
         {:dequeue, demand},
         _from,
-        %{queue: queue, size: size} = state
+        %{queue: queue, size: size, config: config} = state
       ) do
     {remaining, messages, taken} = take(queue, demand)
     new_size = size - taken
 
     :telemetry.execute(
-      [:off_broadway_mqtt_producer, :queue, :out],
-      %{count: taken},
-      %{queue: state.name}
+      [config.telemetry_prefix, :queue, :out],
+      %{count: taken, size: new_size},
+      state_to_telemetry_meta(state)
     )
 
     {:reply, messages, %{state | queue: remaining, size: new_size}}
@@ -108,4 +118,8 @@ defmodule OffBroadway.MQTTProducer.Queue do
 
   defp do_take(queue, _amount, acc, size),
     do: {queue, :queue.to_list(acc), size}
+
+  defp state_to_telemetry_meta(state) do
+    Map.take(state, [:topic_filter])
+  end
 end

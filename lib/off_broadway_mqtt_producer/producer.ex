@@ -79,15 +79,23 @@ defmodule OffBroadway.MQTTProducer.Producer do
          client_opts
        ) do
     case client.start(config, {topic, qos}, queue_name, client_opts) do
-      {:ok, _} -> :ok
-      {:error, {:already_started, _}} -> {:error, {:client, :already_started}}
-      :ignore -> {:error, {:client, :ignore}}
-      {:error, reason} -> {:error, {:client, reason}}
+      {:ok, pid} ->
+        Process.link(pid)
+        :ok
+
+      {:error, {:already_started, _}} ->
+        {:error, {:client, :already_started}}
+
+      :ignore ->
+        {:error, {:client, :ignore}}
+
+      {:error, reason} ->
+        {:error, {:client, reason}}
     end
   end
 
   defp start_queue(config, queue_name) do
-    child_spec = config.queue.child_spec(queue_name)
+    child_spec = config.queue.child_spec([config, queue_name])
 
     case DynamicSupervisor.start_child(config.queue_supervisor, child_spec) do
       {:ok, _} ->

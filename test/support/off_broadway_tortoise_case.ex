@@ -24,10 +24,24 @@ defmodule OffBroadway.MQTTProducerCase do
 
   setup tags do
     tags
+    |> subscribe_telemetry_event_tag
     |> start_registry_tag
     |> start_supervisor_tag
     |> start_mqtt_client_tag
+    |> build_config_tag
     |> start_queue_tag
+  end
+
+  defp subscribe_telemetry_event_tag(tags) do
+    if tags[:subscribe_telemetry_event],
+      do: subscribe_telemetry_event(tags),
+      else: tags
+  end
+
+  defp build_config_tag(tags) do
+    if tags[:build_config],
+      do: build_config(tags),
+      else: tags
   end
 
   defp start_registry_tag(tags) do
@@ -128,7 +142,7 @@ defmodule OffBroadway.MQTTProducerCase do
   context.
   """
   def start_queue(%{test: test_name} = context) do
-    config = config_from_context(context)
+    config = context[:config] || config_from_context(context)
 
     queue_name =
       context
@@ -146,27 +160,12 @@ defmodule OffBroadway.MQTTProducerCase do
 
     {:via, _, {_, topic}} = queue_name
 
-    {:ok, pid} = start_supervised({Queue, queue_name})
+    {:ok, pid} = start_supervised({Queue, [config, queue_name]})
 
     context
     |> Map.put(:queue, queue_name)
     |> Map.put(:queue_topic, topic)
     |> Map.put(:pid, pid)
-  end
-
-  @doc """
-  Returns options to start `OffBroadway.MQTTProducer.TestBroadway` with.
-  """
-  def test_broadway_opts_from_context(context, overrides \\ []) do
-    [
-      name: :"#{context.test}_broadway",
-      topic: "#{context.test}_topic",
-      producer_opts: [
-        client_id: build_test_client_id(),
-        sub_ack: self()
-      ]
-    ]
-    |> Keyword.merge(overrides)
   end
 
   @doc """
@@ -182,10 +181,46 @@ defmodule OffBroadway.MQTTProducerCase do
   It adds the supervisor and registry if avalilable.
   """
   def config_from_context(%{registry: reg, supervisor: sup}) do
-    Config.new(:default, queue_registry: reg, queue_supervisor: sup)
+    Config.new(:default,
+      queue_registry: reg,
+      queue_supervisor: sup
+    )
   end
 
   def config_from_context(_) do
     Config.new(:default)
+  end
+
+  @doc """
+  Subscribes to the event given with `:subscribe_telemetry_event` and forwards
+  them to the test process.
+  """
+  def subscribe_telemetry_event(context) do
+    event =
+      case context[:subscribe_telemetry_event] do
+        [_ | _] = event -> event
+        _ -> raise "no telemetry event given to subscribe!"
+      end
+
+    test_pid = self()
+
+    handle_event = fn event, topic, data, extra ->
+      send(test_pid, {:telemetry, event, topic, data, extra})
+    end
+
+    context.test
+    |> to_string
+    |> :telemetry.attach(event, handle_event, nil)
+
+    context
+    |> Map.put(:event, event)
+  end
+
+  @doc """
+  Builds a config from the values in the context and adds it under the `:config`
+  key to the context.
+  """
+  def build_config(context) do
+    Map.put(context, :config, config_from_context(context))
   end
 end

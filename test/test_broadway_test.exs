@@ -129,4 +129,16 @@ defmodule OffBroadway.MQTTProducer.TestBroadwayTest do
       end
     end
   end
+
+  def test_broadway_opts_from_context(context, overrides \\ []) do
+    [
+      name: :"#{context.test}_broadway",
+      topic: "#{context.test}_topic",
+      producer_opts: [
+        client_id: build_test_client_id(),
+        sub_ack: self()
+      ]
+    ]
+    |> Keyword.merge(overrides)
+  end
 end

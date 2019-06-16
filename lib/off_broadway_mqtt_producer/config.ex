@@ -6,6 +6,7 @@ defmodule OffBroadway.MQTTProducer.Config do
   @default_client_id_prefix "off_broadway_mqtt_producer"
   @default_supervisor OffBroadway.MQTTProducer.QueueSupervisor
   @default_registry OffBroadway.MQTTProducer.QueueRegistry
+  @default_telemetry_prefix :off_broadway_mqtt_producer
 
   @moduledoc """
   Defines a data structure for configuring this library.
@@ -18,6 +19,8 @@ defmodule OffBroadway.MQTTProducer.Config do
       client ids by the MQTT client. Defaults to
       #{inspect(@default_client_id_prefix)}.
     * `server_opts` - See the "Server options" section for details.
+    * `telemetry_prefix` - Sets the prefix for any telemery events. Defaults to
+      `#{inspect(@default_telemetry_prefix)}`.
 
   ### Server options
 
@@ -90,16 +93,17 @@ defmodule OffBroadway.MQTTProducer.Config do
   @type server :: {transport, server_opts}
 
   @type option ::
-          {:server_opts, raw_server_opts}
-          | {:client_id_prefix, String.t()}
-          | {:acknowledger, module}
+          {:acknowledger, module}
           | {:client, module}
+          | {:client_id_prefix, String.t()}
+          | {:dequeue_interval, non_neg_integer}
           | {:handler, module}
           | {:producer, module}
-          | {:queue_supervisor, GenServer.name()}
-          | {:queue_registry, GenServer.name()}
           | {:queue, module}
-          | {:dequeue_interval, non_neg_integer}
+          | {:queue_registry, GenServer.name()}
+          | {:queue_supervisor, GenServer.name()}
+          | {:server_opts, raw_server_opts}
+          | {:telemetry_prefix, atom}
           | {atom, any}
 
   @type options :: [option]
@@ -108,13 +112,14 @@ defmodule OffBroadway.MQTTProducer.Config do
           acknowledger: module,
           client: module,
           client_id_prefix: String.t(),
-          server: server,
+          dequeue_interval: non_neg_integer,
           handler: module,
           producer: module,
           queue: module,
-          queue_supervisor: GenServer.name(),
           queue_registry: GenServer.name(),
-          dequeue_interval: non_neg_integer
+          queue_supervisor: GenServer.name(),
+          server: server,
+          telemetry_prefix: atom
         }
 
   defstruct [
@@ -127,7 +132,8 @@ defmodule OffBroadway.MQTTProducer.Config do
     :queue,
     :queue_supervisor,
     :queue_registry,
-    :server
+    :server,
+    :telemetry_prefix
   ]
 
   @doc """
@@ -177,16 +183,17 @@ defmodule OffBroadway.MQTTProducer.Config do
     struct_opts =
       opts
       |> Keyword.merge(general_overrides)
-      |> Keyword.put_new(:client_id_prefix, @default_client_id_prefix)
-      |> Keyword.put_new(:dequeue_interval, @default_dequeue_interval)
-      |> Keyword.put_new(:server, {transport, server_opts})
       |> Keyword.put_new(:acknowledger, Acknowledger)
       |> Keyword.put_new(:client, Client)
+      |> Keyword.put_new(:client_id_prefix, @default_client_id_prefix)
+      |> Keyword.put_new(:dequeue_interval, @default_dequeue_interval)
       |> Keyword.put_new(:handler, Handler)
       |> Keyword.put_new(:producer, Producer)
       |> Keyword.put_new(:queue, Queue)
       |> Keyword.put_new(:queue_registry, @default_registry)
       |> Keyword.put_new(:queue_supervisor, @default_supervisor)
+      |> Keyword.put_new(:server, {transport, server_opts})
+      |> Keyword.put_new(:telemetry_prefix, @default_telemetry_prefix)
 
     struct(__MODULE__, struct_opts)
   end

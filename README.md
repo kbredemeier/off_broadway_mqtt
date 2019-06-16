@@ -55,17 +55,43 @@ end
 
 ## Telemetry events
 
-- `off_broadway_mqtt_producer.client.connection.up.count`
-- `off_broadway_mqtt_producer.client.connection.down.count`
-- `off_broadway_mqtt_producer.client.subscription.up.count`
-- `off_broadway_mqtt_producer.client.subscription.down.count`
-- `off_broadway_mqtt_producer.client.messages.count`
-- `off_broadway_mqtt_producer.queue.in.count`
-- `off_broadway_mqtt_producer.queue.out.count`
-- `off_broadway_mqtt_producer.acknowledger.success.count`
-- `off_broadway_mqtt_producer.acknowledger.failed.count`
-- `off_broadway_mqtt_producer.acknowledger.ignored.count`
-- `off_broadway_mqtt_producer.acknowledger.requeued.count`
+Telemetry events are disabled by default. To enable them the following must be
+configured at compile time:
+
+```elxir
+use Mix.Config
+
+config :off_broadway_mqtt_producer,
+  telemetry_enabled: true,
+```
+
+A prefix can be configured that is used to prefix any telemetry event.
+
+```elxir
+use Mix.Config
+
+config :off_broadway_mqtt_producer,
+  telemetry_prefix: :my_app,
+```
+
+The prefix can also be passed at runtime with the
+`t:OffBroadway.MQTTProducer.Config.t/0` to the producer.
+
+The following events are emitted:
+
+- `my_app.client.connection.up.count`
+- `my_app.client.connection.down.count`
+- `my_app.client.subscription.up.count`
+- `my_app.client.subscription.down.count`
+- `my_app.client.messages.count`
+- `my_app.queue.in.count`
+- `my_app.queue.in.size`
+- `my_app.queue.out.count`
+- `my_app.queue.out.size`
+- `my_app.acknowledger.success.count`
+- `my_app.acknowledger.failed.count`
+- `my_app.acknowledger.ignored.count`
+- `my_app.acknowledger.requeued.count`
 
 ## License
 

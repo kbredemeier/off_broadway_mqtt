@@ -58,7 +58,7 @@ defmodule OffBroadway.MQTTProducer.Client do
     |> start(subscription, queue_name, opts)
   end
 
-  def start(%Config{} = config, {topic, qos}, queue_name, opts) do
+  def start(%Config{} = config, {topic_sub, qos}, queue_name, opts) do
     client_id =
       Keyword.get_lazy(opts, :client_id, fn ->
         MQTTProducer.unique_client_id(config)
@@ -70,9 +70,9 @@ defmodule OffBroadway.MQTTProducer.Client do
       server_opts
       |> Enum.into(%{})
       |> Map.put(:client_id, client_id)
-      |> Map.put(:topic, topic)
+      |> Map.put(:topic_sub, topic_sub)
       |> Map.put(:qos, qos)
-      |> Map.drop([:password])
+      |> hide_password
 
     handler_opts =
       Keyword.get_lazy(opts, :handler_opts, fn ->
@@ -88,11 +88,17 @@ defmodule OffBroadway.MQTTProducer.Client do
     opts = [
       client_id: client_id,
       handler: {config.handler, handler_opts},
-      subscriptions: [{topic, qos}],
+      subscriptions: [{topic_sub, qos}],
       server: server
     ]
 
     Tortoise.Supervisor.start_child(opts)
+  end
+
+  defp hide_password(meta) do
+    if Map.has_key?(meta, :password),
+      do: Map.update!(meta, :password, fn _ -> "******" end),
+      else: meta
   end
 
   defp get_mqtt_server(%{server: {:ssl, opts}}) do

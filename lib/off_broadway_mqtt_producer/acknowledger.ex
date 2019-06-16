@@ -19,7 +19,7 @@ defmodule OffBroadway.MQTTProducer.Acknowledger do
 
   @impl Broadway.Acknowledger
   def ack(topic, successful, failed) do
-    topic = List.wrap(topic)
+    Logger.metadata(topic: topic)
     ack_messages(successful, topic, :success)
     ack_messages(failed, topic, :failed)
     :ok
@@ -28,6 +28,7 @@ defmodule OffBroadway.MQTTProducer.Acknowledger do
   defp ack_messages(messages, _topic, :failed) do
     Enum.each(messages, fn msg ->
       msg
+      |> send_telemetry_event()
       |> log_failure
       |> maybe_requeue
     end)
@@ -38,9 +39,11 @@ defmodule OffBroadway.MQTTProducer.Acknowledger do
   defp ack_messages([], _topic, _status), do: :ok
 
   defp ack_messages(messages, topic, :success) do
+    Enum.each(messages, &send_telemetry_event/1)
+
     Logger.debug(
       "Successfully processed #{Enum.count(messages)} messages on #{
-        Enum.join(topic, "/")
+        inspect(topic)
       }"
     )
 
@@ -50,14 +53,12 @@ defmodule OffBroadway.MQTTProducer.Acknowledger do
   defp log_failure(
          %{
            status: {_, %{__exception__: true} = e},
-           metadata: metadata,
-           data: %{acc: data}
+           metadata: metadata
          } = message
        ) do
     log_metadata =
       metadata
       |> Enum.into([])
-      |> Keyword.put(:data, data)
 
     log_failure_for_exception(e, log_metadata)
     message
@@ -65,13 +66,11 @@ defmodule OffBroadway.MQTTProducer.Acknowledger do
 
   defp log_failure(%{
          status: {_, reason},
-         metadata: metadata,
-         data: %{acc: data}
+         metadata: metadata
        }) do
     log_metadata =
       metadata
       |> Enum.into([])
-      |> Keyword.put(:data, data)
 
     Logger.error(
       "Processing message failed with unhandled reason: #{inspect(reason)}",
@@ -101,4 +100,19 @@ defmodule OffBroadway.MQTTProducer.Acknowledger do
   end
 
   defp maybe_requeue(msg), do: msg
+
+  defp send_telemetry_event(%{status: status, metadata: metadata} = message) do
+    :telemetry.execute(
+      [:off_broadway_mqtt_producer, :acknowledger, suffix_from_status(status)],
+      %{count: 1},
+      metadata
+    )
+
+    message
+  end
+
+  defp suffix_from_status(:ok), do: :success
+  defp suffix_from_status({:failed, %{ack: :ignore}}), do: :ignored
+  defp suffix_from_status({:failed, %{ack: :retry}}), do: :requeued
+  defp suffix_from_status({:failed, _}), do: :failed
 end

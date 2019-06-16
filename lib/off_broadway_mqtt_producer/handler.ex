@@ -37,8 +37,14 @@ defmodule OffBroadway.MQTTProducer.Handler do
      }}
   end
 
-  def connection(_status, state) do
+  def connection(status, state) do
     Logger.debug("client attempting to connect", Enum.into(state.meta, []))
+
+    :telemetry.execute(
+      [:off_broadway_mqtt_producer, :client, :connection, status],
+      %{count: 1},
+      state.meta
+    )
 
     {:ok, state}
   end
@@ -46,6 +52,13 @@ defmodule OffBroadway.MQTTProducer.Handler do
   def handle_message(topic, payload, %{config: config, queue: queue} = state) do
     message = wrap_message(state, topic, payload)
     :ok = config.queue.enqueue(queue, message)
+
+    :telemetry.execute(
+      [:off_broadway_mqtt_producer, :client, :messages],
+      %{count: 1},
+      state.meta
+    )
+
     {:ok, state}
   end
 
@@ -53,6 +66,12 @@ defmodule OffBroadway.MQTTProducer.Handler do
     Logger.debug(
       "client subscription #{status} on #{topic_filter}",
       Enum.into(state.meta, [])
+    )
+
+    :telemetry.execute(
+      [:off_broadway_mqtt_producer, :client, :subscription, status],
+      %{count: 1},
+      state.meta
     )
 
     {:ok, maybe_suback(state, topic_filter, status)}
@@ -81,11 +100,12 @@ defmodule OffBroadway.MQTTProducer.Handler do
          payload
        ) do
     ack_data = %{queue: queue, tries: 0}
+    topic_str = Enum.join(topic, "/")
 
     %Message{
       data: %Data{topic: topic, acc: payload},
-      metadata: Map.merge(meta, %{topic: topic}),
-      acknowledger: {config.acknowledger, topic, ack_data}
+      metadata: Map.merge(meta, %{topic: topic_str}),
+      acknowledger: {config.acknowledger, topic_str, ack_data}
     }
   end
 end

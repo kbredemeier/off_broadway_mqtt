@@ -56,4 +56,29 @@ defmodule OffBroadway.MQTTProducer.ClientTest do
 
     assert_receive {:test_mqtt_client, :up}, 2000
   end
+
+  describe "telemetry events" do
+    test "sends telemetry event if connection comes up",
+         %{
+           queue_topic: topic,
+           queue: queue
+         } do
+      test_pid = self()
+
+      handle_event = fn event, topic, data, extra ->
+        send(test_pid, {:telemetry, event, topic, data, extra})
+      end
+
+      event = [:off_broadway_mqtt_producer, :client, :connection, :up]
+      :telemetry.attach("test", event, handle_event, nil)
+
+      Client.start(:default, {topic, 0}, queue)
+      assert_receive {:telemetry, ^event, %{count: 1}, meta, nil}
+      assert meta.topic_filter == topic
+      assert meta.qos
+      assert meta.client_id
+      assert meta.host
+      assert meta.port
+    end
+  end
 end

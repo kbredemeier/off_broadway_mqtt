@@ -58,7 +58,7 @@ defmodule OffBroadway.MQTTProducer.Client do
     |> start(subscription, queue_name, opts)
   end
 
-  def start(%Config{} = config, {topic_sub, qos}, queue_name, opts) do
+  def start(%Config{} = config, {topic_filter, qos}, queue_name, opts) do
     client_id =
       Keyword.get_lazy(opts, :client_id, fn ->
         MQTTProducer.unique_client_id(config)
@@ -70,7 +70,7 @@ defmodule OffBroadway.MQTTProducer.Client do
       server_opts
       |> Enum.into(%{})
       |> Map.put(:client_id, client_id)
-      |> Map.put(:topic_sub, topic_sub)
+      |> Map.put(:topic_filter, topic_filter)
       |> Map.put(:qos, qos)
       |> hide_password
 
@@ -88,7 +88,7 @@ defmodule OffBroadway.MQTTProducer.Client do
     opts = [
       client_id: client_id,
       handler: {config.handler, handler_opts},
-      subscriptions: [{topic_sub, qos}],
+      subscriptions: [{topic_filter, qos}],
       server: server
     ]
 

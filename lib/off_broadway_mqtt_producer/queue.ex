@@ -31,12 +31,13 @@ defmodule OffBroadway.MQTTProducer.Queue do
   """
   @spec start_link(name) :: GenServer.on_start()
   def start_link(queue_name) do
-    GenServer.start_link(__MODULE__, [], name: queue_name)
+    GenServer.start_link(__MODULE__, queue_name, name: queue_name)
   end
 
   @impl true
-  def init(_opts) do
+  def init(queue_name) do
     state = %{
+      name: queue_name,
       queue: :queue.new(),
       size: 0
     }
@@ -65,6 +66,12 @@ defmodule OffBroadway.MQTTProducer.Queue do
     updated_queue = :queue.in(msg, queue)
     new_size = size + 1
 
+    :telemetry.execute(
+      [:off_broadway_mqtt_producer, :queue, :in],
+      %{count: 1},
+      %{queue: state.name}
+    )
+
     {:reply, :ok, %{state | queue: updated_queue, size: new_size}}
   end
 
@@ -76,6 +83,12 @@ defmodule OffBroadway.MQTTProducer.Queue do
       ) do
     {remaining, messages, taken} = take(queue, demand)
     new_size = size - taken
+
+    :telemetry.execute(
+      [:off_broadway_mqtt_producer, :queue, :out],
+      %{count: taken},
+      %{queue: state.name}
+    )
 
     {:reply, messages, %{state | queue: remaining, size: new_size}}
   end

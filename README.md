@@ -53,6 +53,20 @@ defmodule OffBroadway.MQTTProducer.TestBroadway do
 end
 ```
 
+## Telemetry events
+
+- `off_broadway_mqtt_producer.client.connection.up.count`
+- `off_broadway_mqtt_producer.client.connection.down.count`
+- `off_broadway_mqtt_producer.client.subscription.up.count`
+- `off_broadway_mqtt_producer.client.subscription.down.count`
+- `off_broadway_mqtt_producer.client.messages.count`
+- `off_broadway_mqtt_producer.queue.in.count`
+- `off_broadway_mqtt_producer.queue.out.count`
+- `off_broadway_mqtt_producer.acknowledger.success.count`
+- `off_broadway_mqtt_producer.acknowledger.failed.count`
+- `off_broadway_mqtt_producer.acknowledger.ignored.count`
+- `off_broadway_mqtt_producer.acknowledger.requeued.count`
+
 ## License
 
 Copyright 2019 Kristopher Bredemeier

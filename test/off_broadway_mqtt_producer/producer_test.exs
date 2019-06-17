@@ -190,11 +190,61 @@ defmodule OffBroadway.MQTTProducer.ProducerTest do
     end
   end
 
+  describe "terminate/2" do
+    test "stops the mqtt client on terminate", context do
+      Process.flag(:trap_exit, true)
+      client_id = build_test_client_id()
+      config = config_from_context(context)
+      topic = to_string(context.test)
+
+      {:ok, pid} =
+        GenStage.start_link(Producer, [
+          config,
+          subscription: {topic, 0},
+          client_id: client_id
+        ])
+
+      assert_mqtt_client_running(client_id)
+      stop_and_receive_exit(pid, :normal)
+      refute_mqtt_client_running(client_id)
+    end
+
+    test "does not stop the queue on terminate", context do
+      Process.flag(:trap_exit, true)
+      client_id = build_test_client_id()
+      config = config_from_context(context)
+      topic = to_string(context.test)
+
+      {:ok, pid} =
+        GenStage.start_link(Producer, [
+          config,
+          subscription: {topic, 0},
+          client_id: client_id
+        ])
+
+      assert_mqtt_client_running(client_id)
+      [{queue_pid, _}] = Registry.lookup(config.queue_registry, topic)
+
+      stop_and_receive_exit(pid, :normal)
+      assert Process.alive?(queue_pid)
+    end
+  end
+
   defp update_config(%{config: config} = state, opts) do
     overrides = Enum.into(opts, %{})
 
     updated_config = Map.merge(config, overrides)
 
     %{state | config: updated_config}
+  end
+
+  defp stop_and_receive_exit(pid, reason, timeout \\ 5000) do
+    GenStage.stop(pid, reason)
+
+    receive do
+      {:EXIT, ^pid, _} -> true
+    after
+      timeout -> raise "never stopped"
+    end
   end
 end

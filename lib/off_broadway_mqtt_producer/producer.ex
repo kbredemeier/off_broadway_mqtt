@@ -80,7 +80,6 @@ defmodule OffBroadway.MQTTProducer.Producer do
        ) do
     case client.start(config, {topic, qos}, queue_name, client_opts) do
       {:ok, pid} ->
-        Process.link(pid)
         :ok
 
       {:error, {:already_started, _}} ->
@@ -95,6 +94,7 @@ defmodule OffBroadway.MQTTProducer.Producer do
   end
 
   defp start_queue(config, queue_name) do
+    Process.flag(:trap_exit, true)
     child_spec = config.queue.child_spec([config, queue_name])
 
     case DynamicSupervisor.start_child(config.queue_supervisor, child_spec) do
@@ -124,9 +124,21 @@ defmodule OffBroadway.MQTTProducer.Producer do
     handle_dequeue_messages(%{state | dequeue_timer: nil})
   end
 
+  # @impl true
+  # def handle_info({:DOWN, ref, :process, _pid, _reason}, state) do
+  #   IO.inspect(ref, label: "DOWN")
+  #   {:noreply, [], state}
+  # end
+
   @impl true
   def handle_info(_, state) do
     {:noreply, [], state}
+  end
+
+  @impl true
+  def terminate(reason, state) do
+    :ok = Tortoise.Connection.disconnect(state.client_id)
+    reason
   end
 
   defp handle_dequeue_messages(

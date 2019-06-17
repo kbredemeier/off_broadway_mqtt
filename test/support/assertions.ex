@@ -9,18 +9,21 @@ defmodule OffBroadway.MQTTProducer.Assertions do
 
   Note that this does not necessarily mean that the client is connected!
   """
-  def assert_mqtt_client_running(client_id) do
+  def assert_mqtt_client_running(client_id, tries \\ 0)
+
+  def assert_mqtt_client_running(client_id, 10) do
+    raise ExUnit.AssertionError,
+      message:
+        "Expected a Tortoise.Connection running for " <>
+          "#{inspect(client_id)} but there isn't any."
+  end
+
+  def assert_mqtt_client_running(client_id, tries) do
     Tortoise.Registry
     |> Registry.lookup({Tortoise.Connection, client_id})
     |> case do
-      [] ->
-        raise ExUnit.AssertionError,
-          message:
-            "Expected a Tortoise.Connection running for " <>
-              "#{inspect(client_id)} but there isn't any."
-
-      [_] ->
-        true
+      [] -> assert_mqtt_client_running(client_id, tries + 1)
+      [_] -> true
     end
   end
 
@@ -28,15 +31,22 @@ defmodule OffBroadway.MQTTProducer.Assertions do
   Tests that there is no `Tortoise.Connection` for the given `client_id`
   registered with the `Tortoise.Registry`.
   """
-  def refute_mqtt_client_running(client_id) do
+  def refute_mqtt_client_running(client_id, tries \\ 0)
+
+  def refute_mqtt_client_running(client_id, 5) do
+    raise ExUnit.AssertionError,
+      message:
+        "Expected NO Tortoise.Connection running for " <>
+          "#{inspect(client_id)} but there is one."
+  end
+
+  def refute_mqtt_client_running(client_id, tries) do
     Tortoise.Registry
     |> Registry.lookup({Tortoise.Connection, client_id})
     |> case do
       [_] ->
-        raise ExUnit.AssertionError,
-          message:
-            "Expected NO Tortoise.Connection running for " <>
-              "#{inspect(client_id)} but there is one."
+        Process.sleep(500)
+        refute_mqtt_client_running(client_id, tries + 1)
 
       [] ->
         true

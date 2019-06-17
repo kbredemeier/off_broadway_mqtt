@@ -17,13 +17,23 @@ end
 
 ## Usage
 
+Add it as a producer to your `Broadway`:
+
 ```elixir
-defmodule OffBroadway.MQTTProducer.TestBroadway do
+defmodule MyApp.NincompoopFilter do
   use OffBroadway.MQTTProducer
+
+  defmodule Nincompoop do
+    defexception ack: :ignore, message: nil
+
+    def message(e) do
+      "message is probably coming from a nincompoop: " <> e.message
+    end
+  end
 
   def start_link(config, topic) do
     Broadway.start_link(__MODULE__,
-      name: name,
+      name: __MODULE__,
       producers: [
         default: [
           module: {Producer, [config, subscription: {topic, 0}]},
@@ -39,18 +49,73 @@ defmodule OffBroadway.MQTTProducer.TestBroadway do
 
   @impl true
   def handle_message(_processor_name, message, _context) do
-    handle_errors(message) do
-      updated_data = String.upcase(message.data)
+    message
+    |> Message.update_data(&process_data/1)
+  rescue
+    e ->
+      Message.failed(message, e)
+  end
 
-      if updated_data == "NINCOMPOOP" do
-        raise OffBroadway.MQTTProducer.Error,
-          message: "that was foolish", ack: :retry
-      end
-
-      %{message | data: updated_data}
+  defp process_data(%OffBroadway.MQTTProducer.Data{acc: msg} = data) do
+    msg
+    |> String.downcase()
+    |> String.contains?("great again")
+    |> case do
+      true -> raise Nincompoop, "contains \"great again\""
+      false -> data
     end
   end
+
+  @impl true
+  def handle_batch(_, messages, _batch_info, _context) do
+    # ...
+    messages
+  end
 end
+```
+
+Start it by passing it at least a `t:OffBroadway.MQTTProducer.Config.t/0` and the
+`subscription` option with a topic to subscribe to and the desired QOS. For
+further options refer to the `OffBroadway.MQTTProducer.Producer` docs.
+
+Default values for the configuration can be given via the mix config:
+
+```elixir
+use Mix.Config
+
+config :off_broadway_mqtt_producer,
+  client_id_prefix: "sensor_data_processor",
+  server_opts: [
+    host: "vernemq",
+    port: 8883,
+    transport: :ssl
+  ],
+  handler: MyApp.BetterHandler
+```
+
+Then build a config and start your broadway:
+
+```elixir
+# Builds a configuration with all configured default values
+config = OffBroadway.MQTTProducer.Config.new()
+
+# Builds a configuration from the defaults and overrides values
+config =
+  OffBroadway.MQTTProducer.Config.new(
+    client_id_prefix: "myapp",
+    server_opts: [
+      # host is converted into a `charlist`
+      host: "mosquitto",
+      # port is converted into a `integer` if it is not already one
+      port: "1883",
+      transport: :tcp,
+      username: "admin",
+      password: "admin"
+    ]
+  )
+
+# Start broadway
+MyApp.NincompoopFilter.start(config, "test_topic")
 ```
 
 ## Telemetry events
@@ -71,7 +136,7 @@ A prefix can be configured that is used to prefix any telemetry event.
 use Mix.Config
 
 config :off_broadway_mqtt_producer,
-  telemetry_prefix: :my_app,
+  telemetry_prefix: :my_broadway,
 ```
 
 The prefix can also be passed at runtime with the
@@ -79,19 +144,34 @@ The prefix can also be passed at runtime with the
 
 The following events are emitted:
 
-- `my_app.client.connection.up.count`
-- `my_app.client.connection.down.count`
-- `my_app.client.subscription.up.count`
-- `my_app.client.subscription.down.count`
-- `my_app.client.messages.count`
-- `my_app.queue.in.count`
-- `my_app.queue.in.size`
-- `my_app.queue.out.count`
-- `my_app.queue.out.size`
-- `my_app.acknowledger.success.count`
-- `my_app.acknowledger.failed.count`
-- `my_app.acknowledger.ignored.count`
-- `my_app.acknowledger.requeued.count`
+- `my_broadway.client.connection.up.count`
+- `my_broadway.client.connection.down.count`
+- `my_broadway.client.subscription.up.count`
+- `my_broadway.client.subscription.down.count`
+- `my_broadway.client.messages.count`
+- `my_broadway.queue.in.count`
+- `my_broadway.queue.in.size`
+- `my_broadway.queue.out.count`
+- `my_broadway.queue.out.size`
+- `my_broadway.acknowledger.success.count`
+- `my_broadway.acknowledger.failed.count`
+- `my_broadway.acknowledger.ignored.count`
+- `my_broadway.acknowledger.requeued.count`
+
+## Development
+
+For development you probably need a running MQTT server in your develoment
+environment. The provided `docker-compose.yml` starts a `vernemq` container for you.
+
+Then run the following commands:
+
+```elxir
+mix deps.get
+mix test
+```
+
+The documentation can be generated with `mix docs`. Code coverage report can be
+generated with `mix.coveralls.html`.
 
 ## License
 

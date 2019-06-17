@@ -2,13 +2,36 @@ defmodule OffBroadway.MQTTProducer.Producer do
   @moduledoc """
   Acts as Producer for messages from a MQTT topic subscription.
 
-  Once started, it starts a queue that is going to buffer the incoming messages,
-  connects to the MQTT broker and subscribes to the provided topic.
+  ## Features
 
-  When the client receives messages from the broker it enqueues them to the
-  queue responsible for the subscription. Notice that if you are using a
-  subscription that contain any wildcards that one queue is responsible for
-  buffering all messages coming from that subscription.
+    * Retrying messages based on fail reason in the message status.
+    * Telemetry events.
+    * Gently handles connection outages thanks to `Tortoise`.
+    * Customizeable behaviour by dependency injectoin.
+
+  ## Options
+
+  The producer requires on start a single argument - a list containing as the
+
+    * first element a `t:OffBroadway.MQTTProducer.Config.t/0` struct.  Refere to
+      the `OffBroadway.MQTTProducer.Config` module for more info.
+    * second element a tuple with the subscription :
+      `{:subscription, {"some_topic", 0}}`.
+
+  Any further keywords are passed as options to
+  `OffBroadway.MQTTProducer.Client.start/2`.
+
+  ## Notes
+
+    * The buffer queues are started and registered based on topics. If you are
+      using shared subscriptiontest you will have a single queue for buffering
+      the incoming messages.
+    * The default queue keeps buffered messages only in memory. If the queue
+      supervisor terminates all unprocessed messages are lost.
+    * The buffer queues are supervised independently and don't shut down with
+      the producer. That way a restarted producer on the same topic can pick up
+      where the faulty one stoped. You might need to stop queues manually if
+      stopping a producer on purpose.
   """
 
   use GenStage
@@ -123,12 +146,6 @@ defmodule OffBroadway.MQTTProducer.Producer do
   def handle_info(:dequeue_messages, state) do
     handle_dequeue_messages(%{state | dequeue_timer: nil})
   end
-
-  # @impl true
-  # def handle_info({:DOWN, ref, :process, _pid, _reason}, state) do
-  #   IO.inspect(ref, label: "DOWN")
-  #   {:noreply, [], state}
-  # end
 
   @impl true
   def handle_info(_, state) do

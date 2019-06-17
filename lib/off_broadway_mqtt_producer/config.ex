@@ -73,6 +73,41 @@ defmodule OffBroadway.MQTTProducer.Config do
           transport: :ssl
         ],
         handler: MyApp.BetterHandler
+
+  ## Building configurations
+
+      iex> OffBroadway.MQTTProducer.Config.new()
+      %OffBroadway.MQTTProducer.Config{
+        acknowledger: OffBroadway.MQTTProducer.Acknowledger,
+        client: OffBroadway.MQTTProducer.Client,
+        client_id_prefix: "obmp",
+        dequeue_interval: 5000,
+        handler: OffBroadway.MQTTProducer.Handler,
+        producer: OffBroadway.MQTTProducer.Producer,
+        queue: OffBroadway.MQTTProducer.Queue,
+        queue_registry: OffBroadway.MQTTProducer.QueueRegistry,
+        queue_supervisor: OffBroadway.MQTTProducer.QueueSupervisor,
+        server: {:tcp, [host: 'localhost', port: 1883]},
+        telemetry_prefix: :off_broadway_mqtt_producer
+      }
+
+      iex> OffBroadway.MQTTProducer.Config.new(
+      ...>   telemetry_prefix: :test,
+      ...>     server_opts: [host: "vernemq", port: 8883, transport: :ssl]
+      ...>   )
+      %OffBroadway.MQTTProducer.Config{
+        acknowledger: OffBroadway.MQTTProducer.Acknowledger,
+        client: OffBroadway.MQTTProducer.Client,
+        client_id_prefix: "obmp",
+        dequeue_interval: 5000,
+        handler: OffBroadway.MQTTProducer.Handler,
+        producer: OffBroadway.MQTTProducer.Producer,
+        queue: OffBroadway.MQTTProducer.Queue,
+        queue_registry: OffBroadway.MQTTProducer.QueueRegistry,
+        queue_supervisor: OffBroadway.MQTTProducer.QueueSupervisor,
+        server: {:ssl, [host: 'vernemq', port: 8883]},
+        telemetry_prefix: :test
+      }
   """
 
   alias OffBroadway.MQTTProducer.Acknowledger

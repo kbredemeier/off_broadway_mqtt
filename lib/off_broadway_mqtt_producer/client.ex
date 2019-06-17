@@ -38,8 +38,8 @@ defmodule OffBroadway.MQTTProducer.Client do
 
     * `:client_id` - Can be used to set the client id for the connection. If not
       given a random client id is generated.
-    * `:sub_ack` - Can be used to inject a subscriber for subscription events.
-      The subscriber receives a message in the form
+    * `sub_ack` - A `t:Process.dest/0` that receives a message as soon as the
+      subscription is acknowledged.  The subscriber receives a message in the form
       `{:subscription, client_id, topic, status}`.
   """
   @spec start(

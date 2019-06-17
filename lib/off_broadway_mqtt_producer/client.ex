@@ -64,6 +64,8 @@ defmodule OffBroadway.MQTTProducer.Client do
         MQTTProducer.unique_client_id(config)
       end)
 
+    warn_if_client_id_is_to_large(client_id)
+
     {_, server_opts} = server = get_mqtt_server(config)
 
     meta =
@@ -94,6 +96,18 @@ defmodule OffBroadway.MQTTProducer.Client do
 
     Tortoise.Supervisor.start_child(opts)
   end
+
+  defp warn_if_client_id_is_to_large(client_id)
+       when byte_size(client_id) > 23 do
+    Logger.warn(
+      "Using a client id that is larger than 23 bytes. That might be a" <>
+        " problem for the broker you are using!"
+    )
+
+    client_id
+  end
+
+  defp warn_if_client_id_is_to_large(client_id), do: client_id
 
   defp hide_password(meta) do
     if Map.has_key?(meta, :password),

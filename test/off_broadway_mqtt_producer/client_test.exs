@@ -1,6 +1,8 @@
 defmodule OffBroadway.MQTTProducer.ClientTest do
   use OffBroadway.MQTTProducerCase, async: true
 
+  import ExUnit.CaptureLog
+
   alias OffBroadway.MQTTProducer.Client
   alias OffBroadway.MQTTProducer.Config
   alias OffBroadway.MQTTProducer.TestHandler
@@ -16,6 +18,40 @@ defmodule OffBroadway.MQTTProducer.ClientTest do
 
     assert Process.alive?(pid)
     refute_receive _, 1000
+  end
+
+  test "logs a warning if client_id is larger than 23 bytes", %{
+    queue: queue,
+    queue_topic: topic,
+    config: config
+  } do
+    log =
+      capture_log([level: :warn], fn ->
+        client_id = <<1::size(192)>>
+
+        assert {:ok, pid} =
+                 Client.start(config, {topic, 0}, queue, client_id: client_id)
+
+        Process.sleep(1000)
+      end)
+
+    assert log =~ "larger than 23 bytes"
+  end
+
+  test "does not log a warning if client_id is smaller that 23 bytes", %{
+    queue: queue,
+    queue_topic: topic,
+    config: config
+  } do
+    log =
+      capture_log([level: :warn], fn ->
+        client_id = <<1::size(184)>>
+
+        assert {:ok, pid} =
+                 Client.start(config, {topic, 0}, queue, client_id: client_id)
+      end)
+
+    refute log =~ "larger than 23 bytes"
   end
 
   test "sends a message if subscribed", %{

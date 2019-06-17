@@ -3,7 +3,7 @@ defmodule OffBroadway.MQTTProducer.Config do
   @default_host 'localhost'
   @default_port 1883
   @default_dequeue_interval 5000
-  @default_client_id_prefix "off_broadway_mqtt_producer"
+  @default_client_id_prefix "obmp"
   @default_supervisor OffBroadway.MQTTProducer.QueueSupervisor
   @default_registry OffBroadway.MQTTProducer.QueueRegistry
   @default_telemetry_prefix :off_broadway_mqtt_producer
@@ -17,7 +17,8 @@ defmodule OffBroadway.MQTTProducer.Config do
       the queue process. Defaults to `#{inspect(@default_dequeue_interval)}`.
     * `client_id_prefix` - The value is used to prefix the randomly generated
       client ids by the MQTT client. Defaults to
-      #{inspect(@default_client_id_prefix)}.
+      #{inspect(@default_client_id_prefix)}. Keep in mind that some brokers
+      limit the size  of client_id size to 23 bytes!
     * `server_opts` - See the "Server options" section for details.
     * `telemetry_prefix` - Sets the prefix for any telemery events. Defaults to
       `#{inspect(@default_telemetry_prefix)}`.
@@ -50,8 +51,15 @@ defmodule OffBroadway.MQTTProducer.Config do
     * `client` - The MQTT client module.
     * `handler`- The handler module used by the default client.
     * `queue` - The queue used in the handler and producer to enqueue / dequeue
-      messages.
+    messages.
 
+
+  ## Compiletime configuration
+
+  The following options must be given at compile time:
+
+  * `telemetry_enabled` - Enables telemetry events if set to true. This option
+    is disabled by default.
 
   ## Configuration example
 

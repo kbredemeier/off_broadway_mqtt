@@ -79,7 +79,7 @@ defmodule OffBroadway.MQTTProducer.ClientTest do
              Client.start(config, {topic, 0}, queue, sub_ack: self())
 
     assert_receive {:subscription, client_id, _, :up}, 1000
-    assert String.starts_with?(client_id, "off_broadway")
+    assert String.starts_with?(client_id, "test")
   end
 
   test "starts a tortoise connection", %{

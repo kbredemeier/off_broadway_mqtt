@@ -9,7 +9,7 @@ defmodule OffBroadway.MQTTProducerTest do
     test "returns a string" do
       assert id = MQTTProducer.unique_client_id()
       assert is_binary(id)
-      assert Regex.match?(~r/^off_broadway_mqtt_producer_.+/, id)
+      assert Regex.match?(~r/^test_.+/, id)
     end
 
     test "returns unique client ids" do
@@ -56,7 +56,7 @@ defmodule OffBroadway.MQTTProducerTest do
   describe "config/1" do
     test "returns the mqtt config" do
       assert %Config{
-               client_id_prefix: "off_broadway_mqtt_producer",
+               client_id_prefix: "test",
                server: {:tcp, [host: 'vernemq', port: 1883]}
              } = MQTTProducer.config()
     end

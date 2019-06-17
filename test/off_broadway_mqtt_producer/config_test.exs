@@ -22,7 +22,7 @@ defmodule OffBroadway.MQTTProducer.ConfigTest do
       assert Code.ensure_compiled?(config.client)
       assert Code.ensure_compiled?(config.handler)
       assert Code.ensure_compiled?(config.queue)
-      assert config.client_id_prefix == "off_broadway_mqtt_producer"
+      assert config.client_id_prefix == "test"
       assert config.dequeue_interval == 100
       assert config.queue_registry == OffBroadway.MQTTProducer.QueueRegistry
       assert config.queue_supervisor == OffBroadway.MQTTProducer.QueueSupervisor

@@ -7,6 +7,9 @@ jobs:
         environment:
           MIX_ENV: test
       - image: vernemq/vernemq:1.8.0-alpine
+        environment:
+          DOCKER_VERNEMQ_ALLOW_ANONYMOUS=on
+          DOCKER_VERNEMQ_LOG.console.level=debug
     working_directory: ~/app
     steps:
       - checkout

@@ -19,7 +19,8 @@ defmodule OffBroadway.MQTTProducer.MixProject do
         "coveralls.detail": :test,
         "coveralls.post": :test,
         "coveralls.html": :test
-      ]
+      ],
+      source_url: "https://github.com/kbredemeier/off_broadway_mqtt_producer"
     ]
   end
 
@@ -36,7 +37,7 @@ defmodule OffBroadway.MQTTProducer.MixProject do
   defp package do
     [
       maintainers: ["Kristopher Bredemeier"],
-      licenses: ["Apache 2.0"],
+      licenses: ["Apache-2.0"],
       files: ["lib", "mix.exs", "README*", "CHANGELOG*", "LICENSE*"],
       links: %{
         "GitHub" => "https://github.com/kbredemeier/off_broadway_mqtt_producer"

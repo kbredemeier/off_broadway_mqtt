@@ -7,7 +7,7 @@ defmodule OffBroadway.MQTTProducer.Producer do
     * Retrying messages based on fail reason in the message status.
     * Telemetry events.
     * Gently handles connection outages thanks to `Tortoise`.
-    * Customizeable behaviour by dependency injectoin.
+    * Customizeable behaviour by dependency injection.
 
   ## Options
 
@@ -24,13 +24,13 @@ defmodule OffBroadway.MQTTProducer.Producer do
   ## Notes
 
     * The buffer queues are started and registered based on topics. If you are
-      using shared subscriptiontest you will have a single queue for buffering
+      using shared subscriptions you will have a single queue for buffering
       the incoming messages.
     * The default queue keeps buffered messages only in memory. If the queue
       supervisor terminates all unprocessed messages are lost.
     * The buffer queues are supervised independently and don't shut down with
       the producer. That way a restarted producer on the same topic can pick up
-      where the faulty one stoped. You might need to stop queues manually if
+      where the faulty one stopped. You might need to stop queues manually if
       stopping a producer on purpose.
   """
 
@@ -44,7 +44,7 @@ defmodule OffBroadway.MQTTProducer.Producer do
 
   @behaviour Broadway.Producer
 
-  @typedoc "The internal state of the producer"
+  @typedoc "Internal state of the producer."
   @type state :: %{
           client_id: String.t(),
           config: Config.t(),
@@ -52,6 +52,24 @@ defmodule OffBroadway.MQTTProducer.Producer do
           dequeue_timer: reference,
           queue: GenServer.name()
         }
+
+  @typedoc """
+  Type for optios that can be passed to the producer.
+
+  * `subscription` - A tuple with the topic and QOS to subscribe to.
+
+  Any other option is passed to `OffBroadway.MQTTProducer.Client.start/4` as
+  options. Refere there for further options.
+  """
+  @type opt ::
+          {:subscription, MQTTProducer.subscription()}
+          | Client.option()
+
+  @typedoc "Collection type for options to start the producer with."
+  @type opts :: [opt, ...]
+
+  @typedoc "Type for the argument passed to the producer on start."
+  @type args :: nonempty_improper_list(Config.t(), opts)
 
   @impl true
   @spec init(args) ::
@@ -102,7 +120,7 @@ defmodule OffBroadway.MQTTProducer.Producer do
          client_opts
        ) do
     case client.start(config, {topic, qos}, queue_name, client_opts) do
-      {:ok, pid} ->
+      {:ok, _pid} ->
         :ok
 
       {:error, {:already_started, _}} ->

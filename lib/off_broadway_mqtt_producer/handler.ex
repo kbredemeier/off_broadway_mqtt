@@ -1,11 +1,10 @@
 defmodule OffBroadway.MQTTProducer.Handler do
-  @moduledoc """
-  Default `Tortoise.Handler` implementation used by
-  `OffBroadway.MQTTProducer.Client`.
+  @moduledoc false
+  # Default `Tortoise.Handler` implementation used by
+  # `OffBroadway.MQTTProducer.Client`.
 
-  Incoming messages are wrapped in `t:Broadway.Messate.t/0` structs and pushed
-  into the provided queue.
-  """
+  # Incoming messages are wrapped in `t:Broadway.Message.t/0` structs and pushed
+  # into the provided queue.
 
   use Tortoise.Handler
 

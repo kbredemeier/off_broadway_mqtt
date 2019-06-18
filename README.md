@@ -123,7 +123,7 @@ MyApp.NincompoopFilter.start(config, "test_topic")
 Telemetry events are disabled by default. To enable them the following must be
 configured at compile time:
 
-```elxir
+```elixir
 use Mix.Config
 
 config :off_broadway_mqtt_producer,
@@ -132,7 +132,7 @@ config :off_broadway_mqtt_producer,
 
 A prefix can be configured that is used to prefix any telemetry event.
 
-```elxir
+```elixir
 use Mix.Config
 
 config :off_broadway_mqtt_producer,
@@ -165,13 +165,13 @@ environment. The provided `docker-compose.yml` starts a `vernemq` container for 
 
 Then run the following commands:
 
-```elxir
+```
 mix deps.get
 mix test
 ```
 
 The documentation can be generated with `mix docs`. Code coverage report can be
-generated with `mix.coveralls.html`.
+generated with `mix coveralls.html`.
 
 ## License
 
@@ -181,7 +181,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+[http://www.apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0)
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,

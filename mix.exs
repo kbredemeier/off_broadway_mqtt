@@ -53,7 +53,7 @@ defmodule OffBroadway.MQTTProducer.MixProject do
       {:telemetry, "~> 0.4.0"},
       {:tortoise, "~> 0.9"},
       {:credo, "~> 1.0", only: [:dev, :test]},
-      {:ex_doc, "~> 0.19.2", only: :dev, runtime: false},
+      {:ex_doc, "~> 0.20", only: :dev, runtime: false},
       {:excoveralls, "~> 0.10", only: :test}
     ]
   end

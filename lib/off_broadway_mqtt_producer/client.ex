@@ -11,7 +11,7 @@ defmodule OffBroadway.MQTTProducer.Client do
       struct.
     * enques received and wrapped messages to the passed queue
 
-  This module relies on `Tortoise` and `f:Tortoise.Supervisor.start_child/1`
+  This module relies on `Tortoise` and `Tortoise.Supervisor.start_child/1`
   establish the connection and subscribe to the topic.
   """
 
@@ -20,12 +20,23 @@ defmodule OffBroadway.MQTTProducer.Client do
   alias OffBroadway.MQTTProducer
   alias OffBroadway.MQTTProducer.Config
 
+  @typedoc """
+  Type for options for `start/4`.
+
+    * `:client_id` - Can be used to set the client id for the connection. If not
+      given a random client id is generated.
+    * `sub_ack` - A `t:Process.dest/0` that receives a message as soon as the
+      subscription is acknowledged.  The subscriber receives a message in the form
+      `{:subscription, client_id, topic, status}`.
+  """
   @type option ::
-          {:handler_opts, keyword}
-          | {:sub_ack, nil | Process.dest()}
+          {:sub_ack, nil | Process.dest()}
           | {:client_id, String.t()}
           | {atom, any}
 
+  @typedoc """
+  Collection type for all options that can be passed to `start/4`
+  """
   @type options :: [option]
 
   @doc """

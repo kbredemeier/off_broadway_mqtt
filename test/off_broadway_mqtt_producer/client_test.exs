@@ -7,7 +7,6 @@ defmodule OffBroadway.MQTTProducer.ClientTest do
   alias OffBroadway.MQTTProducer.Config
   alias OffBroadway.MQTTProducer.TestHandler
 
-  @moduletag capture_log: true
   @moduletag start_supervisor: true
   @moduletag start_registry: true
   @moduletag start_queue: true

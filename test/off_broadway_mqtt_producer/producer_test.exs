@@ -5,7 +5,6 @@ defmodule OffBroadway.MQTTProducer.ProducerTest do
 
   alias OffBroadway.MQTTProducer.Producer
 
-  @moduletag capture_log: true
   @moduletag start_supervisor: true
   @moduletag start_registry: true
 

@@ -8,10 +8,10 @@ defmodule OffBroadway.MQTTProducer.AcknowledgerTest do
   alias OffBroadway.MQTTProducer.Error
   alias OffBroadway.MQTTProducer.Queue
 
+  @moduletag start_registry: true
+  @moduletag start_queue: true
+
   describe "requeuing messages" do
-    @tag capture_log: true
-    @tag start_registry: true
-    @tag start_queue: true
     test "requeues messages that failed with a retry error", %{
       queue: queue,
       queue_topic: topic
@@ -26,9 +26,6 @@ defmodule OffBroadway.MQTTProducer.AcknowledgerTest do
       assert [%{status: :ok}] = Queue.dequeue(queue, 1)
     end
 
-    @tag capture_log: true
-    @tag start_registry: true
-    @tag start_queue: true
     test "does not requeue succeeded messages", %{
       queue: queue,
       queue_topic: topic
@@ -42,9 +39,6 @@ defmodule OffBroadway.MQTTProducer.AcknowledgerTest do
       assert [] = Queue.dequeue(queue, 1)
     end
 
-    @tag capture_log: true
-    @tag start_registry: true
-    @tag start_queue: true
     test "does not requeue messages with a ignore error", %{
       queue: queue,
       queue_topic: topic
@@ -59,9 +53,6 @@ defmodule OffBroadway.MQTTProducer.AcknowledgerTest do
       assert [] = Queue.dequeue(queue, 1)
     end
 
-    @tag capture_log: true
-    @tag start_registry: true
-    @tag start_queue: true
     test "does not requeue messages with a other error #1", %{
       queue: queue,
       queue_topic: topic
@@ -76,9 +67,6 @@ defmodule OffBroadway.MQTTProducer.AcknowledgerTest do
       assert [] = Queue.dequeue(queue, 1)
     end
 
-    @tag capture_log: true
-    @tag start_registry: true
-    @tag start_queue: true
     test "does not requeue messages with a other error #2", %{
       queue: queue,
       queue_topic: topic
@@ -93,9 +81,6 @@ defmodule OffBroadway.MQTTProducer.AcknowledgerTest do
       assert [] = Queue.dequeue(queue, 1)
     end
 
-    @tag capture_log: true
-    @tag start_registry: true
-    @tag start_queue: true
     test "does not requeue messages with a other error #3", %{
       queue: queue,
       queue_topic: topic
@@ -110,9 +95,6 @@ defmodule OffBroadway.MQTTProducer.AcknowledgerTest do
       assert [] = Queue.dequeue(queue, 1)
     end
 
-    @tag capture_log: true
-    @tag start_registry: true
-    @tag start_queue: true
     test "does not requeue messages with a other error #4", %{
       queue: queue,
       queue_topic: topic
@@ -136,8 +118,6 @@ defmodule OffBroadway.MQTTProducer.AcknowledgerTest do
                end)
     end
 
-    @tag start_registry: true
-    @tag start_queue: true
     test "logs exception messages on error level", %{
       queue: queue,
       queue_topic: topic
@@ -156,8 +136,6 @@ defmodule OffBroadway.MQTTProducer.AcknowledgerTest do
       assert log =~ "Argh!"
     end
 
-    @tag start_registry: true
-    @tag start_queue: true
     test "logs any exception's messages on error level", %{
       queue: queue,
       queue_topic: topic
@@ -176,8 +154,6 @@ defmodule OffBroadway.MQTTProducer.AcknowledgerTest do
       assert log =~ "Argh!"
     end
 
-    @tag start_registry: true
-    @tag start_queue: true
     test "logs any error tuple messages on error level", %{
       queue: queue,
       queue_topic: topic
@@ -196,8 +172,6 @@ defmodule OffBroadway.MQTTProducer.AcknowledgerTest do
       assert log =~ "foo"
     end
 
-    @tag start_registry: true
-    @tag start_queue: true
     test "logs any error messages on error level", %{
       queue: queue,
       queue_topic: topic
@@ -216,8 +190,6 @@ defmodule OffBroadway.MQTTProducer.AcknowledgerTest do
       assert log =~ "this did not work"
     end
 
-    @tag start_registry: true
-    @tag start_queue: true
     test "logs retry exception messages on warn level", %{
       queue: queue,
       queue_topic: topic
@@ -236,8 +208,6 @@ defmodule OffBroadway.MQTTProducer.AcknowledgerTest do
       assert log =~ "Argh!"
     end
 
-    @tag start_registry: true
-    @tag start_queue: true
     test "logs skip exception messages on info level", %{
       queue: queue,
       queue_topic: topic

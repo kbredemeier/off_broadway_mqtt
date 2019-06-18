@@ -1,7 +1,6 @@
 defmodule OffBroadway.MQTTProducer.TelemetryTest do
   use OffBroadway.MQTTProducerCase, async: false
 
-  @moduletag capture_log: true
   @moduletag start_supervisor: true
   @moduletag start_registry: true
   @moduletag build_config: true

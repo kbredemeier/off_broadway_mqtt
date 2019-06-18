@@ -6,6 +6,6 @@ config :off_broadway_mqtt_producer,
   telemetry_prefix: :test,
   dequeue_interval: 100,
   server_opts: [
-    host: "vernemq",
+    host: "localhost",
     port: 1883
   ]

@@ -57,7 +57,7 @@ defmodule OffBroadway.MQTTProducerTest do
     test "returns the mqtt config" do
       assert %Config{
                client_id_prefix: "test",
-               server: {:tcp, [host: 'vernemq', port: 1883]}
+               server: {:tcp, [host: 'localhost', port: 1883]}
              } = MQTTProducer.config()
     end
 

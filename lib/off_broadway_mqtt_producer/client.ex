@@ -54,7 +54,7 @@ defmodule OffBroadway.MQTTProducer.Client do
       `{:subscription, client_id, topic, status}`.
   """
   @spec start(
-          Config.t() | Conifig.options() | :default,
+          Config.t() | Config.options() | :default,
           MQTTProducer.subscription(),
           MQTTProducer.queue_name(),
           options

@@ -10,7 +10,7 @@ defmodule OffBroadway.MQTTProducer.Queue do
   alias OffBroadway.MQTTProducer.Telemetry
 
   @typedoc "Type for queue_names"
-  @type name :: GenServer.name() | MQTTProducer.name()
+  @type name :: OffBroadway.MQTTProducer.queue_name()
 
   @doc """
   Called by the producer to start a new queue.
@@ -31,8 +31,11 @@ defmodule OffBroadway.MQTTProducer.Queue do
   @doc """
   Starts a queue with the given name.
   """
-  @spec start_link(args) :: GenServer.on_start()
-        when args: nonempty_improper_list(Config.t(), name)
+  # @spec start_link(args) :: GenServer.on_start()
+  # @spec start_link(args) :: {:ok, pid} | :ignore | {:error, any}
+  #       when args: nonempty_improper_list(Config.t(), name)
+  @spec start_link([name | Config.t() | {atom, any}, ...]) ::
+          GenServer.on_start()
   def start_link([%Config{}, {:via, _, _} = queue_name] = args) do
     GenServer.start_link(__MODULE__, args, name: queue_name)
   end
@@ -63,7 +66,7 @@ defmodule OffBroadway.MQTTProducer.Queue do
   @doc """
   Dequeues the demanded amount of messages from the given queue.
   """
-  @spec enqueue(name, non_neg_integer) :: [any]
+  @spec dequeue(name, non_neg_integer) :: [any]
   def dequeue(queue_name, demand) do
     GenServer.call(queue_name, {:dequeue, demand})
   end

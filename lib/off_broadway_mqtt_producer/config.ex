@@ -214,10 +214,6 @@ defmodule OffBroadway.MQTTProducer.Config do
       opts
       |> Keyword.get(:server_opts, [])
       |> Keyword.merge(server_opts_overrides)
-      |> case do
-        server_opts when is_list(server_opts) -> server_opts
-        _ -> []
-      end
       |> Keyword.update(:host, @default_host, &parse_host/1)
       |> Keyword.update(:port, @default_port, &parse_port/1)
       |> Keyword.update(:transport, @default_transport, &parse_transport/1)

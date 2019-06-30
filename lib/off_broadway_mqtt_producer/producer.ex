@@ -49,7 +49,7 @@ defmodule OffBroadway.MQTTProducer.Producer do
           client_id: String.t(),
           config: Config.t(),
           demand: non_neg_integer,
-          dequeue_timer: reference,
+          dequeue_timer: nil | reference,
           queue: GenServer.name()
         }
 

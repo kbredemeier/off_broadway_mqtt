@@ -9,7 +9,7 @@ defmodule OffBroadway.MQTTProducer do
   @type topic :: binary
   @type qos :: 0 | 1 | 2
   @type subscription :: {topic, qos}
-  @type queue_name :: {:via, Registry, {atom, topic}}
+  @type queue_name :: GenServer.name() | {:via, Registry, {atom, topic}}
   @type config :: Config.t()
 
   defmacro __using__(_) do

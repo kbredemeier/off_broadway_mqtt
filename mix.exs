@@ -20,7 +20,15 @@ defmodule OffBroadway.MQTTProducer.MixProject do
         "coveralls.post": :test,
         "coveralls.html": :test
       ],
-      source_url: "https://github.com/kbredemeier/off_broadway_mqtt_producer"
+      source_url: "https://github.com/kbredemeier/off_broadway_mqtt_producer",
+
+      # Dialyzer
+      dialyzer: [
+        flags: [
+          :underspecs,
+          :unknown
+        ]
+      ]
     ]
   end
 
@@ -48,12 +56,13 @@ defmodule OffBroadway.MQTTProducer.MixProject do
   defp deps do
     [
       {:broadway, "~> 0.3.0"},
+      {:credo, "~> 1.0", only: [:dev, :test]},
+      {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
+      {:ex_doc, "~> 0.20", only: :dev, runtime: false},
+      {:excoveralls, "~> 0.10", only: :test},
       {:gen_stage, "~> 0.14"},
       {:telemetry, "~> 0.4.0"},
-      {:tortoise, "~> 0.9"},
-      {:credo, "~> 1.0", only: [:dev, :test]},
-      {:ex_doc, "~> 0.20", only: :dev, runtime: false},
-      {:excoveralls, "~> 0.10", only: :test}
+      {:tortoise, "~> 0.9"}
     ]
   end
 end

@@ -2,13 +2,13 @@ defmodule Reflow.PreflightCheck do
   @moduledoc """
   Preflight checks to run before the test suite starts.
   """
-  @server_opts :off_broadway_mqtt_producer
+  @server_opts :off_broadway_mqtt
                |> Application.get_all_env()
                |> Keyword.get(:server_opts, [])
 
   require Logger
 
-  alias OffBroadway.MQTTProducer.TestHandler
+  alias OffBroadway.MQTT.TestHandler
   alias Tortoise.Connection
   alias Tortoise.Transport.Tcp
 

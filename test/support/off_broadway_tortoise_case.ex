@@ -1,4 +1,4 @@
-defmodule OffBroadway.MQTTProducerCase do
+defmodule OffBroadway.MQTTCase do
   @moduledoc """
   Test templace for testing aspects of this library.
 
@@ -7,18 +7,18 @@ defmodule OffBroadway.MQTTProducerCase do
 
   use ExUnit.CaseTemplate
 
-  alias OffBroadway.MQTTProducer.Queue
-  alias OffBroadway.MQTTProducer.Config
+  alias OffBroadway.MQTT.Queue
+  alias OffBroadway.MQTT.Config
 
   using _opts do
     quote do
-      import OffBroadway.MQTTProducer.Assertions
-      import OffBroadway.MQTTProducer.Factory
-      import OffBroadway.MQTTProducerCase
+      import OffBroadway.MQTT.Assertions
+      import OffBroadway.MQTT.Factory
+      import OffBroadway.MQTTCase
 
-      alias OffBroadway.MQTTProducer
-      alias OffBroadway.MQTTProducer.Data
-      alias OffBroadway.MQTTProducer.Queue
+      alias OffBroadway.MQTT
+      alias OffBroadway.MQTT.Data
+      alias OffBroadway.MQTT.Queue
     end
   end
 
@@ -112,14 +112,14 @@ defmodule OffBroadway.MQTTProducerCase do
       end
 
     server_opts =
-      :off_broadway_mqtt_producer
+      :off_broadway_mqtt
       |> Application.get_all_env()
       |> Keyword.get(:server_opts, [])
       |> Keyword.drop([:protocol])
 
     tortoise_opts = [
       client_id: client_id,
-      handler: {OffBroadway.MQTTProducer.TestHandler, [pid: self()]},
+      handler: {OffBroadway.MQTT.TestHandler, [pid: self()]},
       server: {Tortoise.Transport.Tcp, server_opts},
       subscriptions: subscriptions
     ]
@@ -152,10 +152,10 @@ defmodule OffBroadway.MQTTProducerCase do
           reg_name
 
         true ->
-          OffBroadway.MQTTProducer.queue_name(config, to_string(test_name))
+          OffBroadway.MQTT.queue_name(config, to_string(test_name))
 
         name ->
-          OffBroadway.MQTTProducer.queue_name(config, name)
+          OffBroadway.MQTT.queue_name(config, name)
       end
 
     {:via, _, {_, topic}} = queue_name

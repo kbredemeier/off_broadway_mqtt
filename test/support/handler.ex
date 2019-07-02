@@ -1,4 +1,4 @@
-defmodule OffBroadway.MQTTProducer.TestHandler do
+defmodule OffBroadway.MQTT.TestHandler do
   @moduledoc false
 
   use Tortoise.Handler

@@ -1,10 +1,10 @@
-defmodule OffBroadway.MQTTProducer do
+defmodule OffBroadway.MQTT do
   @moduledoc """
   A broadway producer for MQTT topic subscriptions.
   """
 
   alias Broadway.Message
-  alias OffBroadway.MQTTProducer.Config
+  alias OffBroadway.MQTT.Config
 
   @type topic :: binary
   @type qos :: 0 | 1 | 2
@@ -16,11 +16,11 @@ defmodule OffBroadway.MQTTProducer do
     quote do
       use Broadway
 
-      import OffBroadway.MQTTProducer
-      require OffBroadway.MQTTProducer
+      import OffBroadway.MQTT
+      require OffBroadway.MQTT
 
       alias Broadway.Message
-      alias OffBroadway.MQTTProducer.Producer
+      alias OffBroadway.MQTT.Producer
     end
   end
 
@@ -97,9 +97,9 @@ defmodule OffBroadway.MQTTProducer do
   def topic_from_queue_name({:via, _, {_, topic}}), do: topic
 
   @doc """
-  Returns the runtime configuration for OffBroadway.MQTTProducer.
+  Returns the runtime configuration for OffBroadway.MQTT.
 
-  See `f:OffBroadway.MQTTProducer.Config.new/1` for more details.
+  See `f:OffBroadway.MQTT.Config.new/1` for more details.
   """
   @spec config(:default | Config.options()) :: Config.t()
   def config(config_opts \\ :default)

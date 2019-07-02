@@ -1,12 +1,12 @@
-defmodule OffBroadway.MQTTProducer.TelemetryTest do
-  use OffBroadway.MQTTProducerCase, async: false
+defmodule OffBroadway.MQTT.TelemetryTest do
+  use OffBroadway.MQTTCase, async: false
 
   @moduletag start_supervisor: true
   @moduletag start_registry: true
   @moduletag build_config: true
 
   describe "client events" do
-    alias OffBroadway.MQTTProducer.Producer
+    alias OffBroadway.MQTT.Producer
 
     @tag subscribe_telemetry_event: [:test, :client, :connection, :up]
     test "sends telemetry event if connection comes up",
@@ -83,8 +83,8 @@ defmodule OffBroadway.MQTTProducer.TelemetryTest do
   end
 
   describe "acknowledger events" do
-    alias OffBroadway.MQTTProducer.Acknowledger, as: Ack
-    import OffBroadway.MQTTProducer
+    alias OffBroadway.MQTT.Acknowledger, as: Ack
+    import OffBroadway.MQTT
 
     @tag subscribe_telemetry_event: [:test, :acknowledger, :failed],
          start_queue: true

@@ -1,9 +1,9 @@
-defmodule OffBroadway.MQTTProducer.MixProject do
+defmodule OffBroadway.MQTT.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :off_broadway_mqtt_producer,
+      app: :off_broadway_mqtt,
       deps: deps(),
       docs: [main: "readme", extras: ["README.md"]],
       elixir: "~> 1.8",
@@ -20,7 +20,7 @@ defmodule OffBroadway.MQTTProducer.MixProject do
         "coveralls.post": :test,
         "coveralls.html": :test
       ],
-      source_url: "https://github.com/kbredemeier/off_broadway_mqtt_producer",
+      source_url: "https://github.com/kbredemeier/off_broadway_mqtt",
 
       # Dialyzer
       dialyzer: [
@@ -38,7 +38,7 @@ defmodule OffBroadway.MQTTProducer.MixProject do
   def application do
     [
       extra_applications: [:logger],
-      mod: {OffBroadway.MQTTProducer.Application, []}
+      mod: {OffBroadway.MQTT.Application, []}
     ]
   end
 
@@ -48,7 +48,7 @@ defmodule OffBroadway.MQTTProducer.MixProject do
       licenses: ["Apache-2.0"],
       files: ["lib", "mix.exs", "README*", "CHANGELOG*", "LICENSE*"],
       links: %{
-        "GitHub" => "https://github.com/kbredemeier/off_broadway_mqtt_producer"
+        "GitHub" => "https://github.com/kbredemeier/off_broadway_mqtt"
       }
     ]
   end

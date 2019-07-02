@@ -1,8 +1,8 @@
-defmodule OffBroadway.MQTTProducer.Telemetry do
+defmodule OffBroadway.MQTT.Telemetry do
   @moduledoc false
 
   @enabled Application.get_env(
-             :off_broadway_mqtt_producer,
+             :off_broadway_mqtt,
              :telemetry_enabled,
              false
            )

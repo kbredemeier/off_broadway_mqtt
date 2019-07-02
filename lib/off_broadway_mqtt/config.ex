@@ -1,12 +1,12 @@
-defmodule OffBroadway.MQTTProducer.Config do
+defmodule OffBroadway.MQTT.Config do
   @default_transport :tcp
   @default_host 'localhost'
   @default_port 1883
   @default_dequeue_interval 5000
   @default_client_id_prefix "obmp"
-  @default_supervisor OffBroadway.MQTTProducer.QueueSupervisor
-  @default_registry OffBroadway.MQTTProducer.QueueRegistry
-  @default_telemetry_prefix :off_broadway_mqtt_producer
+  @default_supervisor OffBroadway.MQTT.QueueSupervisor
+  @default_registry OffBroadway.MQTT.QueueRegistry
+  @default_telemetry_prefix :off_broadway_mqtt
 
   @moduledoc """
   Defines a data structure for configuring this library.
@@ -65,7 +65,7 @@ defmodule OffBroadway.MQTTProducer.Config do
 
       use Mix.Config
 
-      config :off_broadway_mqtt_producer,
+      config :off_broadway_mqtt,
         client_id_prefix: "sensor_data_processor",
         server_opts: [
           host: "vernemq",
@@ -76,45 +76,45 @@ defmodule OffBroadway.MQTTProducer.Config do
 
   ## Building configurations
 
-      iex> OffBroadway.MQTTProducer.Config.new()
-      %OffBroadway.MQTTProducer.Config{
-        acknowledger: OffBroadway.MQTTProducer.Acknowledger,
-        client: OffBroadway.MQTTProducer.Client,
+      iex> OffBroadway.MQTT.Config.new()
+      %OffBroadway.MQTT.Config{
+        acknowledger: OffBroadway.MQTT.Acknowledger,
+        client: OffBroadway.MQTT.Client,
         client_id_prefix: "obmp",
         dequeue_interval: 5000,
-        handler: OffBroadway.MQTTProducer.Handler,
-        producer: OffBroadway.MQTTProducer.Producer,
-        queue: OffBroadway.MQTTProducer.Queue,
-        queue_registry: OffBroadway.MQTTProducer.QueueRegistry,
-        queue_supervisor: OffBroadway.MQTTProducer.QueueSupervisor,
+        handler: OffBroadway.MQTT.Handler,
+        producer: OffBroadway.MQTT.Producer,
+        queue: OffBroadway.MQTT.Queue,
+        queue_registry: OffBroadway.MQTT.QueueRegistry,
+        queue_supervisor: OffBroadway.MQTT.QueueSupervisor,
         server: {:tcp, [host: 'localhost', port: 1883]},
-        telemetry_prefix: :off_broadway_mqtt_producer
+        telemetry_prefix: :off_broadway_mqtt
       }
 
-      iex> OffBroadway.MQTTProducer.Config.new(
+      iex> OffBroadway.MQTT.Config.new(
       ...>   telemetry_prefix: :test,
       ...>     server_opts: [host: "vernemq", port: 8883, transport: :ssl]
       ...>   )
-      %OffBroadway.MQTTProducer.Config{
-        acknowledger: OffBroadway.MQTTProducer.Acknowledger,
-        client: OffBroadway.MQTTProducer.Client,
+      %OffBroadway.MQTT.Config{
+        acknowledger: OffBroadway.MQTT.Acknowledger,
+        client: OffBroadway.MQTT.Client,
         client_id_prefix: "obmp",
         dequeue_interval: 5000,
-        handler: OffBroadway.MQTTProducer.Handler,
-        producer: OffBroadway.MQTTProducer.Producer,
-        queue: OffBroadway.MQTTProducer.Queue,
-        queue_registry: OffBroadway.MQTTProducer.QueueRegistry,
-        queue_supervisor: OffBroadway.MQTTProducer.QueueSupervisor,
+        handler: OffBroadway.MQTT.Handler,
+        producer: OffBroadway.MQTT.Producer,
+        queue: OffBroadway.MQTT.Queue,
+        queue_registry: OffBroadway.MQTT.QueueRegistry,
+        queue_supervisor: OffBroadway.MQTT.QueueSupervisor,
         server: {:ssl, [host: 'vernemq', port: 8883]},
         telemetry_prefix: :test
       }
   """
 
-  alias OffBroadway.MQTTProducer.Acknowledger
-  alias OffBroadway.MQTTProducer.Client
-  alias OffBroadway.MQTTProducer.Handler
-  alias OffBroadway.MQTTProducer.Producer
-  alias OffBroadway.MQTTProducer.Queue
+  alias OffBroadway.MQTT.Acknowledger
+  alias OffBroadway.MQTT.Client
+  alias OffBroadway.MQTT.Handler
+  alias OffBroadway.MQTT.Producer
+  alias OffBroadway.MQTT.Queue
 
   @type transport :: :tcp | :ssl
 
@@ -187,7 +187,7 @@ defmodule OffBroadway.MQTTProducer.Config do
   def new(options_or_config \\ :default)
 
   def new(:default) do
-    :off_broadway_mqtt_producer
+    :off_broadway_mqtt
     |> Application.get_all_env()
     |> new([])
   end
@@ -201,7 +201,7 @@ defmodule OffBroadway.MQTTProducer.Config do
   """
   @spec new(:default | options, options) :: t
   def new(:default, overrides) do
-    :off_broadway_mqtt_producer
+    :off_broadway_mqtt
     |> Application.get_all_env()
     |> new(overrides)
   end

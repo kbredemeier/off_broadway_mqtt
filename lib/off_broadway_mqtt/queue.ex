@@ -1,20 +1,20 @@
-defmodule OffBroadway.MQTTProducer.Queue do
+defmodule OffBroadway.MQTT.Queue do
   @moduledoc """
   Implemens a inmemory queue to buffer incoming messages for a subscription
   from a MQTT broker.
   """
   use GenServer
 
-  alias OffBroadway.MQTTProducer
-  alias OffBroadway.MQTTProducer.Config
-  alias OffBroadway.MQTTProducer.Telemetry
+  alias OffBroadway.MQTT
+  alias OffBroadway.MQTT.Config
+  alias OffBroadway.MQTT.Telemetry
 
   @typedoc "Type for queue_names"
-  @type name :: OffBroadway.MQTTProducer.queue_name()
+  @type name :: OffBroadway.MQTT.queue_name()
 
   @doc """
   Called by the producer to start a new queue.
-  This usually receives a `t:MQTTProducer.queue_name/0` as argument.
+  This usually receives a `t:MQTT.queue_name/0` as argument.
   """
   @callback start_link(name) :: GenServer.on_start()
 
@@ -45,7 +45,7 @@ defmodule OffBroadway.MQTTProducer.Queue do
     state = %{
       config: config,
       name: queue_name,
-      topic_filter: MQTTProducer.topic_from_queue_name(queue_name),
+      topic_filter: MQTT.topic_from_queue_name(queue_name),
       queue: :queue.new(),
       size: 0
     }

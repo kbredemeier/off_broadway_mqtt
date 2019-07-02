@@ -1,10 +1,10 @@
-defmodule OffBroadway.MQTTProducer.Factory do
+defmodule OffBroadway.MQTT.Factory do
   @moduledoc false
 
   alias Broadway.Message
-  alias OffBroadway.MQTTProducer.Acknowledger
-  alias OffBroadway.MQTTProducer.Config
-  alias OffBroadway.MQTTProducer.Data
+  alias OffBroadway.MQTT.Acknowledger
+  alias OffBroadway.MQTT.Config
+  alias OffBroadway.MQTT.Data
 
   @doc """
   Builds a data structure equivalent to what the mqtt producer is producing.

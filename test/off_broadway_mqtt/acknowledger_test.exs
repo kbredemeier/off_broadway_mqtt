@@ -1,12 +1,12 @@
-defmodule OffBroadway.MQTTProducer.AcknowledgerTest do
-  use OffBroadway.MQTTProducerCase, async: true
+defmodule OffBroadway.MQTT.AcknowledgerTest do
+  use OffBroadway.MQTTCase, async: true
 
   import ExUnit.CaptureLog
-  import OffBroadway.MQTTProducer
+  import OffBroadway.MQTT
 
-  alias OffBroadway.MQTTProducer.Acknowledger, as: Ack
-  alias OffBroadway.MQTTProducer.Error
-  alias OffBroadway.MQTTProducer.Queue
+  alias OffBroadway.MQTT.Acknowledger, as: Ack
+  alias OffBroadway.MQTT.Error
+  alias OffBroadway.MQTT.Queue
 
   @moduletag start_registry: true
   @moduletag start_queue: true

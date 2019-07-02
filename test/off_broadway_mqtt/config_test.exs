@@ -1,7 +1,7 @@
-defmodule OffBroadway.MQTTProducer.ConfigTest do
+defmodule OffBroadway.MQTT.ConfigTest do
   use ExUnit.Case, async: true
 
-  alias OffBroadway.MQTTProducer.Config
+  alias OffBroadway.MQTT.Config
 
   @config_opts ~w(
     acknowledger
@@ -24,13 +24,13 @@ defmodule OffBroadway.MQTTProducer.ConfigTest do
       assert Code.ensure_compiled?(config.queue)
       assert config.client_id_prefix == "test"
       assert config.dequeue_interval == 100
-      assert config.queue_registry == OffBroadway.MQTTProducer.QueueRegistry
-      assert config.queue_supervisor == OffBroadway.MQTTProducer.QueueSupervisor
+      assert config.queue_registry == OffBroadway.MQTT.QueueRegistry
+      assert config.queue_supervisor == OffBroadway.MQTT.QueueSupervisor
       assert config.telemetry_prefix == :test
     end
 
     test "reads config from Application environment" do
-      assert config_opts = Application.get_all_env(:off_broadway_mqtt_producer)
+      assert config_opts = Application.get_all_env(:off_broadway_mqtt)
       refute Enum.empty?(config_opts)
       assert Config.new(config_opts) == Config.new()
       assert Config.new(config_opts) == Config.new(:default)

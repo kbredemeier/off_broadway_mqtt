@@ -1,11 +1,11 @@
-defmodule OffBroadway.MQTTProducer.ClientTest do
-  use OffBroadway.MQTTProducerCase, async: true
+defmodule OffBroadway.MQTT.ClientTest do
+  use OffBroadway.MQTTCase, async: true
 
   import ExUnit.CaptureLog
 
-  alias OffBroadway.MQTTProducer.Client
-  alias OffBroadway.MQTTProducer.Config
-  alias OffBroadway.MQTTProducer.TestHandler
+  alias OffBroadway.MQTT.Client
+  alias OffBroadway.MQTT.Config
+  alias OffBroadway.MQTT.TestHandler
 
   @moduletag start_supervisor: true
   @moduletag start_registry: true

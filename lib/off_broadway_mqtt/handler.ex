@@ -1,7 +1,7 @@
-defmodule OffBroadway.MQTTProducer.Handler do
+defmodule OffBroadway.MQTT.Handler do
   @moduledoc false
   # Default `Tortoise.Handler` implementation used by
-  # `OffBroadway.MQTTProducer.Client`.
+  # `OffBroadway.MQTT.Client`.
 
   # Incoming messages are wrapped in `t:Broadway.Message.t/0` structs and pushed
   # into the provided queue.
@@ -11,8 +11,8 @@ defmodule OffBroadway.MQTTProducer.Handler do
   require Logger
 
   alias Broadway.Message
-  alias OffBroadway.MQTTProducer.Data
-  alias OffBroadway.MQTTProducer.Telemetry
+  alias OffBroadway.MQTT.Data
+  alias OffBroadway.MQTT.Telemetry
 
   defstruct queue: nil,
             config: nil,

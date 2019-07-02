@@ -1,4 +1,4 @@
-defmodule OffBroadway.MQTTProducer.Producer do
+defmodule OffBroadway.MQTT.Producer do
   @moduledoc """
   Acts as Producer for messages from a MQTT topic subscription.
 
@@ -13,13 +13,13 @@ defmodule OffBroadway.MQTTProducer.Producer do
 
   The producer requires on start a single argument - a list containing as the
 
-    * first element a `t:OffBroadway.MQTTProducer.Config.t/0` struct.  Refere to
-      the `OffBroadway.MQTTProducer.Config` module for more info.
+    * first element a `t:OffBroadway.MQTT.Config.t/0` struct.  Refere to
+      the `OffBroadway.MQTT.Config` module for more info.
     * second element a tuple with the subscription :
       `{:subscription, {"some_topic", 0}}`.
 
   Any further keywords are passed as options to
-  `OffBroadway.MQTTProducer.Client.start/2`.
+  `OffBroadway.MQTT.Client.start/2`.
 
   ## Notes
 
@@ -38,9 +38,9 @@ defmodule OffBroadway.MQTTProducer.Producer do
 
   require Logger
 
-  alias OffBroadway.MQTTProducer
-  alias OffBroadway.MQTTProducer.Client
-  alias OffBroadway.MQTTProducer.Config
+  alias OffBroadway.MQTT
+  alias OffBroadway.MQTT.Client
+  alias OffBroadway.MQTT.Config
 
   @behaviour Broadway.Producer
 
@@ -58,11 +58,11 @@ defmodule OffBroadway.MQTTProducer.Producer do
 
   * `subscription` - A tuple with the topic and QOS to subscribe to.
 
-  Any other option is passed to `OffBroadway.MQTTProducer.Client.start/4` as
+  Any other option is passed to `OffBroadway.MQTT.Client.start/4` as
   options. Refere there for further options.
   """
   @type opt ::
-          {:subscription, MQTTProducer.subscription()}
+          {:subscription, MQTT.subscription()}
           | Client.option()
 
   @typedoc "Collection type for options to start the producer with."
@@ -80,10 +80,10 @@ defmodule OffBroadway.MQTTProducer.Producer do
           | {:stop, {:queue, :ignore}}
           | {:stop, {:queue, term}}
         when args: nonempty_improper_list(Config.t(), opts),
-             opt: {:subscription, MQTTProducer.subscription()} | Client.option(),
+             opt: {:subscription, MQTT.subscription()} | Client.option(),
              opts: [opt, ...]
   def init([%Config{} = config, {:subscription, {topic, qos} = sub} | opts]) do
-    queue_name = MQTTProducer.queue_name(config, topic)
+    queue_name = MQTT.queue_name(config, topic)
 
     :ok =
       config
@@ -95,7 +95,7 @@ defmodule OffBroadway.MQTTProducer.Producer do
     client_opts =
       opts
       |> Keyword.put_new_lazy(:client_id, fn ->
-        MQTTProducer.unique_client_id(config)
+        MQTT.unique_client_id(config)
       end)
 
     with :ok <- start_queue(config, queue_name),
@@ -143,7 +143,7 @@ defmodule OffBroadway.MQTTProducer.Producer do
         :ok
 
       {:error, {:already_started, _}} ->
-        topic = MQTTProducer.topic_from_queue_name(queue_name)
+        topic = MQTT.topic_from_queue_name(queue_name)
         Logger.warn("queue for topic #{inspect(topic)} is already started")
         :ok
 

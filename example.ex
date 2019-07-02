@@ -1,5 +1,5 @@
 defmodule MyApp.NincompoopFilter do
-  use OffBroadway.MQTTProducer
+  use OffBroadway.MQTT
 
   defmodule Nincompoop do
     defexception ack: :ignore, message: nil
@@ -36,7 +36,7 @@ defmodule MyApp.NincompoopFilter do
       Message.failed(message, e)
   end
 
-  defp process_data(%OffBroadway.MQTTProducer.Data{acc: msg} = data) do
+  defp process_data(%OffBroadway.MQTT.Data{acc: msg} = data) do
     IO.puts("processing")
 
     msg
@@ -57,7 +57,7 @@ end
 
 # Builds a configuration from the default and overrides certail values
 config =
-  OffBroadway.MQTTProducer.Config.new(
+  OffBroadway.MQTT.Config.new(
     client_id_prefix: "myapp",
     server_opts: [
       # host is converted into a `charlist`
@@ -71,7 +71,7 @@ config =
   )
 
 # Builds a configuration with all configured default values
-config = OffBroadway.MQTTProducer.Config.new()
+config = OffBroadway.MQTT.Config.new()
 
 # Start broadway
 {:ok, pid} = MyApp.NincompoopFilter.start_link(config, "test_topic")

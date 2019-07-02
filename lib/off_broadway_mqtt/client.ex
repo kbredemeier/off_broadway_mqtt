@@ -1,13 +1,13 @@
-defmodule OffBroadway.MQTTProducer.Client do
+defmodule OffBroadway.MQTT.Client do
   @moduledoc """
   Implemens the default MQTT client that is used by the producer to connect
   to the broker.
 
   The client
 
-    * establishes the connection to OffBroadway.MQTTProducer broker
+    * establishes the connection to OffBroadway.MQTT broker
     * subscribes to the provided topic
-    * wrapping the received payload in a `t:OffBroadway.MQTTProducer.Data.t/0`
+    * wrapping the received payload in a `t:OffBroadway.MQTT.Data.t/0`
       struct.
     * enques received and wrapped messages to the passed queue
 
@@ -17,8 +17,8 @@ defmodule OffBroadway.MQTTProducer.Client do
 
   require Logger
 
-  alias OffBroadway.MQTTProducer
-  alias OffBroadway.MQTTProducer.Config
+  alias OffBroadway.MQTT
+  alias OffBroadway.MQTT.Config
 
   @typedoc """
   Type for options for `start/4`.
@@ -43,7 +43,7 @@ defmodule OffBroadway.MQTTProducer.Client do
   Starts a MQTT client for the passed subscription with a random client id.
 
   When passing `:default` as the first argument
-  `f:OffBroadway.MQTTProducer.config/1` is used to figure out the connection.
+  `f:OffBroadway.MQTT.config/1` is used to figure out the connection.
 
   ## Options
 
@@ -55,8 +55,8 @@ defmodule OffBroadway.MQTTProducer.Client do
   """
   @spec start(
           Config.t() | Config.options() | :default,
-          MQTTProducer.subscription(),
-          MQTTProducer.queue_name(),
+          MQTT.subscription(),
+          MQTT.queue_name(),
           options
         ) :: DynamicSupervisor.on_start_child()
   def start(config \\ :default, subscription, queue_name, opts \\ [])
@@ -72,7 +72,7 @@ defmodule OffBroadway.MQTTProducer.Client do
   def start(%Config{} = config, {topic_filter, qos}, queue_name, opts) do
     client_id =
       Keyword.get_lazy(opts, :client_id, fn ->
-        MQTTProducer.unique_client_id(config)
+        MQTT.unique_client_id(config)
       end)
 
     warn_if_client_id_is_to_large(client_id)

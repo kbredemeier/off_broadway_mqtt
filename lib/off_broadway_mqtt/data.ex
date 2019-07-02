@@ -1,4 +1,4 @@
-defmodule OffBroadway.MQTTProducer.Data do
+defmodule OffBroadway.MQTT.Data do
   @moduledoc """
   Defines a data structure for the data passed around in the
   `t:Broadway.Message.t/0` struct.

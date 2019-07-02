@@ -1,7 +1,7 @@
-defmodule OffBroadway.MQTTProducer.Error do
+defmodule OffBroadway.MQTT.Error do
   @moduledoc """
   Exceptions can be used to influence the behaviour of the message acknowledger.
-  See `OffBroadway.MQTTProducer.Acknowledger` for more details.
+  See `OffBroadway.MQTT.Acknowledger` for more details.
   """
 
   @type t :: %{

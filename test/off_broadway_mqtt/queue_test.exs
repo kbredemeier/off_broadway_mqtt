@@ -1,5 +1,5 @@
-defmodule OffBroadway.MQTTProducer.QueueTest do
-  use OffBroadway.MQTTProducerCase, async: true
+defmodule OffBroadway.MQTT.QueueTest do
+  use OffBroadway.MQTTCase, async: true
 
   @moduletag build_config: true
 

@@ -1,4 +1,4 @@
-defmodule OffBroadway.MQTTProducer.Acknowledger do
+defmodule OffBroadway.MQTT.Acknowledger do
   @moduledoc """
   Implements `Broadway.Acknowledger` behaviour.
 
@@ -11,8 +11,8 @@ defmodule OffBroadway.MQTTProducer.Acknowledger do
 
   require Logger
 
-  alias OffBroadway.MQTTProducer.Config
-  alias OffBroadway.MQTTProducer.Telemetry
+  alias OffBroadway.MQTT.Config
+  alias OffBroadway.MQTT.Telemetry
 
   @behaviour Broadway.Acknowledger
 

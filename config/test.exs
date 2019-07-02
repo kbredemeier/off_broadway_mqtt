@@ -1,6 +1,6 @@
 use Mix.Config
 
-config :off_broadway_mqtt_producer,
+config :off_broadway_mqtt,
   telemetry_enabled: true,
   client_id_prefix: "test",
   telemetry_prefix: :test,

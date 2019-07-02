@@ -1,6 +1,6 @@
-defmodule OffBroadway.MQTTProducer.Assertions do
+defmodule OffBroadway.MQTT.Assertions do
   @moduledoc """
-  Provices test assertion helpers to test `OffBroadway.MQTTProducer`.
+  Provices test assertion helpers to test `OffBroadway.MQTT`.
   """
 
   @doc """
@@ -77,7 +77,7 @@ defmodule OffBroadway.MQTTProducer.Assertions do
       after
         2000 ->
           acks =
-            OffBroadway.MQTTProducer.Assertions.collect_messages()
+            OffBroadway.MQTT.Assertions.collect_messages()
             |> Enum.filter(fn
               {:subscription, _, _, _} -> true
               _ -> false

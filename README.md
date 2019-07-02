@@ -1,16 +1,16 @@
-# OffBroadway.MQTTProducer
+# OffBroadway.MQTT
 
 A MQTT connector for [Broadway](https://github.com/plataformatec/broadway).
 
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `off_broadway_mqtt_producer` to your list of dependencies in `mix.exs`:
+by adding `off_broadway_mqtt` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:off_broadway_mqtt_producer, "~> 0.1.0"}
+    {:off_broadway_mqtt, "~> 0.1.0"}
   ]
 end
 ```
@@ -21,7 +21,7 @@ Add it as a producer to your `Broadway`:
 
 ```elixir
 defmodule MyApp.NincompoopFilter do
-  use OffBroadway.MQTTProducer
+  use OffBroadway.MQTT
 
   defmodule Nincompoop do
     defexception ack: :ignore, message: nil
@@ -56,7 +56,7 @@ defmodule MyApp.NincompoopFilter do
       Message.failed(message, e)
   end
 
-  defp process_data(%OffBroadway.MQTTProducer.Data{acc: msg} = data) do
+  defp process_data(%OffBroadway.MQTT.Data{acc: msg} = data) do
     msg
     |> String.downcase()
     |> String.contains?("great again")
@@ -74,16 +74,16 @@ defmodule MyApp.NincompoopFilter do
 end
 ```
 
-Start it by passing it at least a `t:OffBroadway.MQTTProducer.Config.t/0` and the
+Start it by passing it at least a `t:OffBroadway.MQTT.Config.t/0` and the
 `subscription` option with a topic to subscribe to and the desired QOS. For
-further options refer to the `OffBroadway.MQTTProducer.Producer` docs.
+further options refer to the `OffBroadway.MQTT.Producer` docs.
 
 Default values for the configuration can be given via the mix config:
 
 ```elixir
 use Mix.Config
 
-config :off_broadway_mqtt_producer,
+config :off_broadway_mqtt,
   client_id_prefix: "sensor_data_processor",
   server_opts: [
     host: "vernemq",
@@ -97,11 +97,11 @@ Then build a config and start your broadway:
 
 ```elixir
 # Builds a configuration with all configured default values
-config = OffBroadway.MQTTProducer.Config.new()
+config = OffBroadway.MQTT.Config.new()
 
 # Builds a configuration from the defaults and overrides values
 config =
-  OffBroadway.MQTTProducer.Config.new(
+  OffBroadway.MQTT.Config.new(
     client_id_prefix: "myapp",
     server_opts: [
       # host is converted into a `charlist`
@@ -126,7 +126,7 @@ configured at compile time:
 ```elixir
 use Mix.Config
 
-config :off_broadway_mqtt_producer,
+config :off_broadway_mqtt,
   telemetry_enabled: true,
 ```
 
@@ -135,12 +135,12 @@ A prefix can be configured that is used to prefix any telemetry event.
 ```elixir
 use Mix.Config
 
-config :off_broadway_mqtt_producer,
+config :off_broadway_mqtt,
   telemetry_prefix: :my_broadway,
 ```
 
 The prefix can also be passed at runtime with the
-`t:OffBroadway.MQTTProducer.Config.t/0` to the producer.
+`t:OffBroadway.MQTT.Config.t/0` to the producer.
 
 The following events are emitted:
 

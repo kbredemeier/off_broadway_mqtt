@@ -1,7 +1,7 @@
-defmodule OffBroadway.MQTTProducer.TestBroadway do
+defmodule OffBroadway.MQTT.TestBroadway do
   @moduledoc false
 
-  use OffBroadway.MQTTProducer
+  use OffBroadway.MQTT
 
   def start_link(config, opts) do
     test_pid = self()

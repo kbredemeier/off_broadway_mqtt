@@ -1,7 +1,7 @@
-defmodule OffBroadway.MQTTProducer.TestBroadwayTest do
-  use OffBroadway.MQTTProducerCase, async: true
+defmodule OffBroadway.MQTT.TestBroadwayTest do
+  use OffBroadway.MQTTCase, async: true
 
-  alias OffBroadway.MQTTProducer.TestBroadway
+  alias OffBroadway.MQTT.TestBroadway
 
   @moduletag start_registry: true
   @moduletag start_supervisor: true

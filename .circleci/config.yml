@@ -10,6 +10,8 @@ jobs:
         environment:
           DOCKER_VERNEMQ_ALLOW_ANONYMOUS: "on"
           DOCKER_VERNEMQ_LOG.console.level: "debug"
+        ports:
+          - "1883:1883"
     working_directory: ~/app
     steps:
       - checkout

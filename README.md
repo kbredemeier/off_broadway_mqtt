@@ -1,3 +1,6 @@
+[![Coverage Status](https://coveralls.io/repos/github/kbredemeier/off_broadway_mqtt/badge.svg?branch=master)](https://coveralls.io/github/kbredemeier/off_broadway_mqtt?branch=master)
+[![CircleCI](https://circleci.com/gh/kbredemeier/off_broadway_mqtt.svg?style=svg)](https://circleci.com/gh/kbredemeier/off_broadway_mqtt)
+
 # OffBroadway.MQTT
 
 A MQTT connector for [Broadway](https://github.com/plataformatec/broadway).

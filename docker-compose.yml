@@ -1,10 +1,7 @@
 version: "2"
 
 services:
-  vernemq:
-    image: "vernemq/vernemq:1.8.0-alpine"
-    ports:
+  mosquitto:
+    image: "eclipse-mosquitto:1.6.3"
+    ports: 
       - "1883:1883"
-    environment:
-      - DOCKER_VERNEMQ_ALLOW_ANONYMOUS=on
-      - DOCKER_VERNEMQ_LOG.console.level=debug

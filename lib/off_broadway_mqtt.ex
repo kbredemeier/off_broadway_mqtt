@@ -17,26 +17,9 @@ defmodule OffBroadway.MQTT do
       use Broadway
 
       import OffBroadway.MQTT
-      require OffBroadway.MQTT
 
       alias Broadway.Message
       alias OffBroadway.MQTT.Producer
-    end
-  end
-
-  @doc """
-  Rescues any exception and adds it as the fail reason to the message(s).
-
-  Use this macro to wrap the code in your `c:Broadway.handle_message/3` and
-  `c:Broadway.handle_batch/4` callback implementations.
-  """
-  defmacro handle_errors(messages, do: block) do
-    quote location: :keep do
-      try do
-        unquote(block)
-      rescue
-        e -> fail_msg(unquote(messages), e)
-      end
     end
   end
 

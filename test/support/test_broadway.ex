@@ -52,18 +52,18 @@ defmodule OffBroadway.MQTT.TestBroadway do
   def handle_message(_processor_name, message, %{
         process_fun: process_fun
       }) do
-    handle_errors(message) do
-      message
-      |> Message.update_data(process_fun)
-    end
+    message
+    |> Message.update_data(process_fun)
+  rescue
+    e -> fail_msg(message, e)
   end
 
   @impl true
   def handle_batch(_batcher, messages, _batch_info, %{
         batch_fun: batch_fun
       }) do
-    handle_errors(messages) do
-      batch_fun.(messages)
-    end
+    batch_fun.(messages)
+  rescue
+    e -> fail_msg(messages, e)
   end
 end

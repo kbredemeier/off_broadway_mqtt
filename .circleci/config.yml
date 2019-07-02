@@ -39,5 +39,5 @@ jobs:
           paths: "_build"
       - run: mix coveralls.html
       - store_test_results:
-          path: conver/excoveralls.html
+          path: cover/excoveralls.html
 

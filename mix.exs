@@ -6,6 +6,7 @@ defmodule OffBroadway.MQTT.MixProject do
       app: :off_broadway_mqtt,
       deps: deps(),
       docs: [main: "readme", extras: ["README.md"]],
+      description: "A MQTT connector for Broadway",
       elixir: "~> 1.8",
       elixirc_paths: elixirc_paths(Mix.env()),
       package: package(),
@@ -45,6 +46,7 @@ defmodule OffBroadway.MQTT.MixProject do
 
   defp package do
     [
+      name: "off_broadway_mqtt_connector",
       maintainers: ["Kristopher Bredemeier"],
       licenses: ["Apache-2.0"],
       files: ["lib", "mix.exs", "README*", "CHANGELOG*", "LICENSE*"],

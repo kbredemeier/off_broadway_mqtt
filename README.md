@@ -7,16 +7,17 @@ A MQTT connector for [Broadway](https://github.com/plataformatec/broadway).
 
 ## Installation
 
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `off_broadway_mqtt` to your list of dependencies in `mix.exs`:
+Add `off_broadway_mqtt_connector` to the list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:off_broadway_mqtt, "~> 0.1.0"}
+    {:off_broadway_mqtt_connector, "~> 0.1.0"}
   ]
 end
 ```
+
+Notice that the package has a different name than the application!
 
 ## Usage
 

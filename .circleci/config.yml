@@ -37,7 +37,4 @@ jobs:
       - save_cache:
           key: v1-build-cache
           paths: "_build"
-      - run: mix coveralls.html
-      - store_test_results:
-          path: cover/excoveralls.html
-
+      - run: mix coveralls.circle

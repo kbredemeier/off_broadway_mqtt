@@ -1,5 +1,7 @@
+[![Hex version badge](https://img.shields.io/hexpm/v/off_broadway_mqtt_connector.svg)](https://hex.pm/packages/off_broadway_mqtt_connector)
 [![Coverage Status](https://coveralls.io/repos/github/kbredemeier/off_broadway_mqtt/badge.svg?branch=master)](https://coveralls.io/github/kbredemeier/off_broadway_mqtt?branch=master)
 [![CircleCI](https://circleci.com/gh/kbredemeier/off_broadway_mqtt.svg?style=svg)](https://circleci.com/gh/kbredemeier/off_broadway_mqtt)
+[![GitHub license](https://img.shields.io/github/license/kbredemeier/off_broadway_mqtt.svg)](https://github.com/kbredemeier/off_broadway_mqtt/blob/master/LICENSE)
 
 # OffBroadway.MQTT
 

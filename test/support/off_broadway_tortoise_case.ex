@@ -7,8 +7,8 @@ defmodule OffBroadway.MQTTCase do
 
   use ExUnit.CaseTemplate
 
-  alias OffBroadway.MQTT.Queue
   alias OffBroadway.MQTT.Config
+  alias OffBroadway.MQTT.Queue
 
   using _opts do
     quote do

@@ -16,7 +16,7 @@ defmodule Reflow.PreflightCheck do
     wait_for_mqtt()
   end
 
-  defp wait_for_mqtt() do
+  defp wait_for_mqtt do
     port = @server_opts[:port] || 1883
     host = @server_opts[:host] || "localhost"
     Logger.info("Waiting for MQTT broker on \"#{host}:#{port}\"...")

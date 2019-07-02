@@ -77,7 +77,7 @@ defmodule OffBroadway.MQTT.Assertions do
       after
         2000 ->
           acks =
-            OffBroadway.MQTT.Assertions.collect_messages()
+            collect_messages()
             |> Enum.filter(fn
               {:subscription, _, _, _} -> true
               _ -> false

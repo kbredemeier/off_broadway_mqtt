@@ -14,7 +14,7 @@ Add `off_broadway_mqtt_connector` to the list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:off_broadway_mqtt_connector, "~> 0.1.0"}
+    {:off_broadway_mqtt, "~> 0.1.0", hex: "off_broadway_mqtt_connector"}
   ]
 end
 ```

@@ -178,6 +178,11 @@ mix test
 The documentation can be generated with `mix docs`. Code coverage report can be
 generated with `mix coveralls.html`.
 
+## Attribution
+
+This library heavily depends on Martin Gausby's [tortoise](https://github.com/gausby/tortoise)
+for connecting to the MQTT broker.
+
 ## License
 
 Copyright 2019 Kristopher Bredemeier

@@ -49,6 +49,34 @@ defmodule OffBroadway.MQTT.ConfigTest do
       assert {:password, "foo"} in applied_opts
     end
 
+    test "removes nil passwords from server_opts" do
+      assert %{server: {_, applied_opts}} =
+               Config.new(server_opts: [password: nil])
+
+      assert :error = Keyword.fetch(applied_opts, :password)
+    end
+
+    test "removes empty passwords from server_opts" do
+      assert %{server: {_, applied_opts}} =
+               Config.new(server_opts: [password: ""])
+
+      assert :error = Keyword.fetch(applied_opts, :password)
+    end
+
+    test "removes nil user_names from server_opts" do
+      assert %{server: {_, applied_opts}} =
+               Config.new(server_opts: [user_name: nil])
+
+      assert :error = Keyword.fetch(applied_opts, :user_name)
+    end
+
+    test "removes empty user_names from server_opts" do
+      assert %{server: {_, applied_opts}} =
+               Config.new(server_opts: [user_name: ""])
+
+      assert :error = Keyword.fetch(applied_opts, :user_name)
+    end
+
     for key <- @config_opts do
       test "takes #{key} from config_opts" do
         assert %{unquote(key) => __MODULE__} =

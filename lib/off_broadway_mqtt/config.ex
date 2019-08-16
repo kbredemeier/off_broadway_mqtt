@@ -108,6 +108,10 @@ defmodule OffBroadway.MQTT.Config do
         server: {:ssl, [host: 'vernemq', port: 8883]},
         telemetry_prefix: :test
       }
+
+  Keep in mind that any option with nil or the empty string will be removed from
+  the server options to prevent issues when configuring the application from
+  environment variables.
   """
 
   alias OffBroadway.MQTT.Acknowledger
@@ -209,6 +213,8 @@ defmodule OffBroadway.MQTT.Config do
       |> Keyword.update(:transport, @default_transport, &parse_transport/1)
       |> Keyword.pop(:transport, @default_transport)
 
+    server_opts = Enum.reject(server_opts, &is_empty?/1)
+
     struct_opts =
       opts
       |> Keyword.put_new(:acknowledger, Acknowledger)
@@ -225,6 +231,10 @@ defmodule OffBroadway.MQTT.Config do
 
     struct(__MODULE__, struct_opts)
   end
+
+  defp is_empty?({_, ""}), do: true
+  defp is_empty?({_, nil}), do: true
+  defp is_empty?(_), do: false
 
   defp parse_host(host) when is_binary(host), do: host
 

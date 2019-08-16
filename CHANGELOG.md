@@ -8,3 +8,5 @@
 - Does not convert `host` to a chartlist anymore. Tortoise already does that!
   This also fixes the issue with logger metadate including the hostname as a
   charlist.
+- Removes nil or empty values from the options passed when opening the MQTT
+  connection.

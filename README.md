@@ -123,6 +123,10 @@ config =
 MyApp.NincompoopFilter.start(config, "test_topic")
 ```
 
+Keep in mind that any option with nil or the empty string will be removed from
+the server options to prevent issues when configuring the application from
+environment variables.
+
 ## Telemetry events
 
 Telemetry events are disabled by default. To enable them the following must be

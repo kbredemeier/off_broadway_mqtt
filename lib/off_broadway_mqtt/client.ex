@@ -42,9 +42,6 @@ defmodule OffBroadway.MQTT.Client do
   @doc """
   Starts a MQTT client for the passed subscription with a random client id.
 
-  When passing `:default` as the first argument
-  `f:OffBroadway.MQTT.config/1` is used to figure out the connection.
-
   ## Options
 
     * `:client_id` - Can be used to set the client id for the connection. If not
@@ -54,22 +51,12 @@ defmodule OffBroadway.MQTT.Client do
       `{:subscription, client_id, topic, status}`.
   """
   @spec start(
-          Config.t() | Config.options() | :default,
+          Config.t(),
           MQTT.subscription(),
           MQTT.queue_name(),
           options
         ) :: DynamicSupervisor.on_start_child()
-  def start(config \\ :default, subscription, queue_name, opts \\ [])
-
-  def start(arg, subscription, queue_name, opts)
-      when arg == :default
-      when is_list(arg) do
-    arg
-    |> Config.new()
-    |> start(subscription, queue_name, opts)
-  end
-
-  def start(%Config{} = config, {topic_filter, qos}, queue_name, opts) do
+  def start(%Config{} = config, {topic_filter, qos}, queue_name, opts \\ []) do
     client_id =
       Keyword.get_lazy(opts, :client_id, fn ->
         MQTT.unique_client_id(config)

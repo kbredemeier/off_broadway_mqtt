@@ -15,9 +15,9 @@ defmodule OffBroadway.MQTT.ConfigTest do
     telemetry_prefix
   )a
 
-  describe "new/2" do
+  describe "new_from_app_config/1" do
     test "defaults" do
-      config = Config.new()
+      config = Config.new_from_app_config()
       assert Code.ensure_compiled?(config.acknowledger)
       assert Code.ensure_compiled?(config.client)
       assert Code.ensure_compiled?(config.handler)
@@ -32,10 +32,9 @@ defmodule OffBroadway.MQTT.ConfigTest do
     test "reads config from Application environment" do
       assert config_opts = Application.get_all_env(:off_broadway_mqtt)
       refute Enum.empty?(config_opts)
-      assert Config.new(config_opts) == Config.new()
-      assert Config.new(config_opts) == Config.new(:default)
-      assert Config.new(config_opts) == Config.new(:default, config_opts)
-      assert Config.new(config_opts) == Config.new(:default, [])
+      assert Config.new(config_opts) == Config.new_from_app_config()
+      assert Config.new(config_opts) == Config.new_from_app_config(config_opts)
+      assert Config.new(config_opts) == Config.new_from_app_config([])
     end
 
     test "adds additional opts to server" do
@@ -45,7 +44,7 @@ defmodule OffBroadway.MQTT.ConfigTest do
       assert {:password, "foo"} in applied_opts
 
       assert %{server: {_, applied_opts}} =
-               Config.new(:default, server_opts: [password: "foo"])
+               Config.new_from_app_config(server_opts: [password: "foo"])
 
       assert {:password, "foo"} in applied_opts
     end
@@ -57,13 +56,8 @@ defmodule OffBroadway.MQTT.ConfigTest do
       end
     end
 
-    test "sets host from a charlist" do
-      assert %{server: {_, [host: 'test_host', port: _]}} =
-               Config.new(server_opts: [host: 'test_host'])
-    end
-
     test "sets host from a string" do
-      assert %{server: {_, [host: 'test_host', port: _]}} =
+      assert %{server: {_, [host: "test_host", port: _]}} =
                Config.new(server_opts: [host: "test_host"])
     end
 

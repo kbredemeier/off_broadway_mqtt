@@ -22,7 +22,7 @@ defmodule OffBroadway.MQTT.Factory do
     ack_data = %{
       queue: queue_name,
       tries: 0,
-      config: config || Config.new(:default)
+      config: config || Config.new_from_app_config()
     }
 
     %Message{

@@ -32,10 +32,7 @@ defmodule OffBroadway.MQTTTest do
   end
 
   test "topic_from_queue_name/1" do
-    assert "test" =
-             MQTT.topic_from_queue_name(
-               {:via, Registry, {:foo, "test"}}
-             )
+    assert "test" = MQTT.topic_from_queue_name({:via, Registry, {:foo, "test"}})
   end
 
   describe "queue_name" do
@@ -53,11 +50,26 @@ defmodule OffBroadway.MQTTTest do
     end
   end
 
-  describe "config/1" do
+  describe "default_config/1" do
     test "returns the mqtt config" do
       assert %Config{
                client_id_prefix: "test",
-               server: {:tcp, [host: 'localhost', port: 1883]}
+               server: {:tcp, [host: "localhost", port: 1883]}
+             } = MQTT.default_config()
+    end
+
+    test "sets transport" do
+      assert %Config{
+               server: {:ssl, _}
+             } = MQTT.default_config(server_opts: [transport: :ssl])
+    end
+  end
+
+  describe "config/1" do
+    test "returns the mqtt config" do
+      assert %Config{
+               client_id_prefix: "obmp",
+               server: {:tcp, [host: "localhost", port: 1883]}
              } = MQTT.config()
     end
 

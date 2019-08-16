@@ -35,6 +35,10 @@ defmodule OffBroadway.MQTT do
   def fail_msg(message, exception),
     do: message |> Message.failed(exception)
 
+  def unique_client_id do
+    default_config() |> unique_client_id()
+  end
+
   @doc """
   Utility function to build a for the running application unique client id that
   can be used when connecting with the broker.
@@ -43,26 +47,18 @@ defmodule OffBroadway.MQTT do
   other from the broker in case the broker does not allow multiple connections
   with the same clent id.
   """
-  @spec unique_client_id(:default | config) :: String.t()
-  def unique_client_id(config \\ :default)
-
+  @spec unique_client_id(config) :: String.t()
   def unique_client_id(%{client_id_prefix: prefix}) do
     random = [:positive] |> System.unique_integer() |> to_string
     prefix <> "_" <> random
-  end
-
-  def unique_client_id(:default) do
-    :default |> Config.new() |> unique_client_id
   end
 
   @doc """
   Returns the name for the queue belonging to the given topic.
   """
   @spec queue_name(topic) :: {:via, Registry, {atom, topic}}
-  def queue_name(topic)
-
   def queue_name(topic) do
-    :default |> config() |> queue_name(topic)
+    Config.new_from_app_config() |> queue_name(topic)
   end
 
   @doc """
@@ -84,10 +80,17 @@ defmodule OffBroadway.MQTT do
 
   See `f:OffBroadway.MQTT.Config.new/1` for more details.
   """
-  @spec config(:default | Config.options()) :: Config.t()
-  def config(config_opts \\ :default)
-  def config(:default), do: Config.new(:default)
+  @spec config(Config.options()) :: config
+  def config(config_opts \\ []) when is_list(config_opts),
+    do: Config.new(config_opts)
 
-  def config(config_opts) when is_list(config_opts),
-    do: Config.new(:default, config_opts)
+  @doc """
+  Returns the runtime configuration for OffBroadway.MQTT with the configured
+  application defaults.
+
+  See `f:OffBroadway.MQTT.Config.new_from_app_config/1` for more details.
+  """
+  @spec default_config(Config.options()) :: config
+  def default_config(config_opts \\ []) when is_list(config_opts),
+    do: Config.new_from_app_config(config_opts)
 end

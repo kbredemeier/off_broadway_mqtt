@@ -110,7 +110,6 @@ config =
   OffBroadway.MQTT.Config.new(
     client_id_prefix: "myapp",
     server_opts: [
-      # host is converted into a `charlist`
       host: "mosquitto",
       # port is converted into a `integer` if it is not already one
       port: "1883",

@@ -1,6 +1,6 @@
 defmodule OffBroadway.MQTT.Config do
   @default_transport :tcp
-  @default_host 'localhost'
+  @default_host "localhost"
   @default_port 1883
   @default_dequeue_interval 5000
   @default_client_id_prefix "obmp"
@@ -119,7 +119,7 @@ defmodule OffBroadway.MQTT.Config do
   @type transport :: :tcp | :ssl
 
   @type raw_server_opt ::
-          {:host, charlist | String.t()}
+          {:host, String.t()}
           | {:port, non_neg_integer | String.t()}
           | {:transport, transport, String.t()}
           | {atom, any}
@@ -127,7 +127,7 @@ defmodule OffBroadway.MQTT.Config do
   @type raw_server_opts :: [raw_server_opt, ...]
 
   @type server_opt ::
-          {:host, charlist}
+          {:host, String.t()}
           | {:port, non_neg_integer}
           | {:transport, transport}
           | {atom, any}
@@ -180,40 +180,30 @@ defmodule OffBroadway.MQTT.Config do
   ]
 
   @doc """
-  Returns a `t:t/0`. If no argument or `:default` is passed the configuration
-  reads values from the `Application` environment.
-  """
-  @spec new(:default | options) :: t
-  def new(options_or_config \\ :default)
+  Returns a `t:t/0` with values from the applicatoin config.
 
-  def new(:default) do
+  Use this function if you want to build a config based on the configured
+  defaults for the application.
+  """
+  @spec new_from_app_config(options) :: t
+  def new_from_app_config(overrides \\ []) do
     :off_broadway_mqtt
     |> Application.get_all_env()
-    |> new([])
+    |> Keyword.merge(overrides)
+    |> new()
   end
-
-  def new(opts), do: new(opts, [])
 
   @doc """
-  Returns a `t:t/0`. If no argument or `:default` is passed the configuration
-  reads values from the `Application` environment. The second argument is used
-  to override values in the config.
+  Builds a `t:t/0` from the given keyword list.
+
+  Use this function if you want to build a config only from the passed options.
+  Any application config is ignored if using this function.
   """
-  @spec new(:default | options, options) :: t
-  def new(:default, overrides) do
-    :off_broadway_mqtt
-    |> Application.get_all_env()
-    |> new(overrides)
-  end
-
-  def new(opts, overrides) when is_list(opts) when is_list(overrides) do
-    server_opts_overrides = overrides[:server_opts] || []
-    general_overrides = Keyword.drop(overrides, [:server_opts])
-
+  @spec new(options) :: t
+  def new(opts \\ []) when is_list(opts) do
     {transport, server_opts} =
       opts
       |> Keyword.get(:server_opts, [])
-      |> Keyword.merge(server_opts_overrides)
       |> Keyword.update(:host, @default_host, &parse_host/1)
       |> Keyword.update(:port, @default_port, &parse_port/1)
       |> Keyword.update(:transport, @default_transport, &parse_transport/1)
@@ -221,7 +211,6 @@ defmodule OffBroadway.MQTT.Config do
 
     struct_opts =
       opts
-      |> Keyword.merge(general_overrides)
       |> Keyword.put_new(:acknowledger, Acknowledger)
       |> Keyword.put_new(:client, Client)
       |> Keyword.put_new(:client_id_prefix, @default_client_id_prefix)
@@ -237,8 +226,7 @@ defmodule OffBroadway.MQTT.Config do
     struct(__MODULE__, struct_opts)
   end
 
-  defp parse_host(host) when is_binary(host), do: String.to_charlist(host)
-  defp parse_host(host), do: host
+  defp parse_host(host) when is_binary(host), do: host
 
   defp parse_port(port) when is_integer(port), do: port
 

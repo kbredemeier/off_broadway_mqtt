@@ -97,7 +97,7 @@ defmodule OffBroadway.MQTT.ClientTest do
     queue: queue,
     queue_topic: topic
   } do
-    config = :default |> Config.new() |> Map.put(:handler, TestHandler)
+    config = Config.new_from_app_config() |> Map.put(:handler, TestHandler)
 
     assert {:ok, _pid} =
              Client.start(config, {topic, 0}, queue, handler_opts: [pid: self()])

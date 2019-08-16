@@ -181,14 +181,14 @@ defmodule OffBroadway.MQTTCase do
   It adds the supervisor and registry if avalilable.
   """
   def config_from_context(%{registry: reg, supervisor: sup}) do
-    Config.new(:default,
+    Config.new_from_app_config(
       queue_registry: reg,
       queue_supervisor: sup
     )
   end
 
   def config_from_context(_) do
-    Config.new(:default)
+    Config.new_from_app_config()
   end
 
   @doc """

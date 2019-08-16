@@ -103,7 +103,7 @@ Then build a config and start your broadway:
 
 ```elixir
 # Builds a configuration with all configured default values
-config = OffBroadway.MQTT.Config.new()
+config = OffBroadway.MQTT.Config.new_from_app_config()
 
 # Builds a configuration from the defaults and overrides values
 config =

@@ -7,7 +7,7 @@ defmodule OffBroadway.MQTT.MixProject do
       deps: deps(),
       docs: [main: "readme", extras: ["README.md"]],
       description: "A MQTT connector for Broadway",
-      elixir: "~> 1.8",
+      elixir: "~> 1.10",
       elixirc_paths: elixirc_paths(Mix.env()),
       package: package(),
       start_permanent: Mix.env() == :prod,
@@ -58,12 +58,11 @@ defmodule OffBroadway.MQTT.MixProject do
 
   defp deps do
     [
-      {:broadway, "~> 0.3.0"},
+      {:broadway, "~> 0.6.2"},
       {:credo, "~> 1.0", only: [:dev, :test]},
       {:dialyxir, "~> 1.0.0-rc.6", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.20", only: :dev, runtime: false},
       {:excoveralls, "~> 0.10", only: :test},
-      {:gen_stage, "~> 0.14"},
       {:telemetry, "~> 0.4.0"},
       {:tortoise, "~> 0.9"}
     ]
